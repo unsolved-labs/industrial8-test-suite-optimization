@@ -1,0 +1,84 @@
+[System]
+-- specify system name
+Name: INDUSTRIAL_8
+
+[Parameter]
+-- general syntax is parameter_name : value1, value2, ...
+p1 (boolean) : true, false
+p2 (boolean) : true, false
+p3 (boolean) : true, false
+p4 (boolean) : true, false
+p5 (boolean) : true, false
+p6 (boolean) : true, false
+p7 (boolean) : true, false
+p8 (boolean) : true, false
+p9 (boolean) : true, false
+p10 (boolean) : true, false
+p11 (boolean) : true, false
+p12 (boolean) : true, false
+p13 (boolean) : true, false
+p14 (enum) : v1, v2, v3
+
+[Constraint]
+-- this section is also optional
+p6 = true || p5 = true
+p6 = true || p7 = true
+p6 = true || p8 = true
+p6 = true || p9 = true
+p6 = true || p10 = true
+p6 = true || p11 = true
+p6 = true || p12 = true
+p7 = true || p5 = true
+p7 = true || p6 = true
+p7 = true || p8 = true
+p7 = true || p9 = true
+p7 = true || p10 = true
+p7 = true || p11 = true
+p7 = true || p12 = true
+p8 = true || p5 = true
+p8 = true || p6 = true
+p8 = true || p7 = true
+p8 = true || p9 = true
+p8 = true || p10 = true
+p8 = true || p11 = true
+p8 = true || p12 = true
+p9 = true || p5 = true
+p9 = true || p6 = true
+p9 = true || p7 = true
+p9 = true || p8 = true
+p9 = true || p10 = true
+p9 = true || p11 = true
+p9 = true || p12 = true
+p10 = true || p5 = true
+p10 = true || p6 = true
+p10 = true || p7 = true
+p10 = true || p8 = true
+p10 = true || p9 = true
+p10 = true || p11 = true
+p10 = true || p12 = true
+p11 = true || p5 = true
+p11 = true || p6 = true
+p11 = true || p7 = true
+p11 = true || p8 = true
+p11 = true || p9 = true
+p11 = true || p10 = true
+p11 = true || p12 = true
+p12 = true || p5 = true
+p12 = true || p6 = true
+p12 = true || p7 = true
+p12 = true || p8 = true
+p12 = true || p9 = true
+p12 = true || p10 = true
+p12 = true || p11 = true
+p13 = true || p5 = true
+p13 = true || p6 = true
+p13 = true || p7 = true
+p13 = true || p8 = true
+p13 = true || p9 = true
+p13 = true || p10 = true
+p13 = true || p11 = true
+p13 = true || p12 = true
+(p14 != "v1") || p3 = true
+(p14 != "v2") || (! (p3 = true))
+p14 != "v3"
+((((((((((((! (p1 = true)) || (! (p2 = true))) || (! (p3 = true))) || (! (p4 = true))) || (! (p5 = true))) || (! (p6 = true))) || (! (p7 = true))) || (! (p8 = true))) || (! (p9 = true))) || (! (p10 = true))) || (! (p11 = true))) || (! (p12 = true))) || (! (p13 = true))
