@@ -1,0 +1,8 @@
+# Local verifier build
+verify_independent
+
+# LaTeX build products
+manuscript/*.aux
+manuscript/*.log
+manuscript/*.out
+manuscript/*.toc

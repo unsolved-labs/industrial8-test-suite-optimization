@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this research release, please cite it using the metadata below."
+title: "Exact constrained covering arrays for the INDUSTRIAL_8 benchmark"
+type: software
+authors:
+  - name: "Unsolved Labs"
+version: "R003"
+date-released: 2026-08-12
+repository-code: "https://github.com/unsolved-labs/industrial8-test-suite-optimization"
+url: "https://unsolved-labs.github.io/results/r003-industrial8/"
+abstract: >-
+  Exact constrained covering-array optima for the frozen INDUSTRIAL_8
+  benchmark at strengths 2 through 6, with explicit witnesses and independent
+  exact verification.
+keywords:
+  - combinatorial interaction testing
+  - covering arrays
+  - constrained testing
+  - exact optimization
