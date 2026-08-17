@@ -40,6 +40,25 @@ jobs:
       - name: Reject Python syntax errors
         run: python3 -m py_compile verify.py verify_sources.py
 
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Build and independently type-check Lean formalization
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1
+        with:
+          build: true
+          test: false
+          lint: false
+          nanoda: true
+          nanoda-allow-sorry: false
+
+      - name: Reject Lean proof placeholders
+        run: |
+          ! grep -RInE '\b(sorry|admit)\b' R003Formal R003Formal.lean
+
   manuscript:
     runs-on: ubuntu-latest
     steps:

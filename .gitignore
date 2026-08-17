@@ -1,8 +1,16 @@
 # Local verifier build
 verify_independent
 
+# Lean/Lake build products
+.lake/
+*.olean
+*.ilean
+*.trace
+
 # LaTeX build products
 manuscript/*.aux
 manuscript/*.log
 manuscript/*.out
 manuscript/*.toc
+manuscript/*.fls
+manuscript/*.fdb_latexmk

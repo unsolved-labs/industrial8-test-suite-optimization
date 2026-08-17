@@ -37,6 +37,14 @@
     "primary": "verify.py",
     "report": "verification-report.json",
     "search_or_ai_generation_required_for_replay": false,
-    "source_integrity": "verify_sources.py"
+    "source_integrity": "verify_sources.py",
+    "formal_partial": {
+      "file": "R003Formal/Industrial8.lean",
+      "scope": "local strength-3 pairwise covering minimum on four binary columns",
+      "declarations": [
+        "R003.noFourRowPairwiseCover",
+        "R003.baseFivePairwiseCovers"
+      ]
+    }
   }
 }

@@ -4,7 +4,7 @@
 
 This release proves the exact minimum number of valid tests needed for the frozen public `INDUSTRIAL_8` constrained combinatorial-interaction-testing benchmark at strengths 2 through 6.
 
-> This research artifact was generated with frontier AI and released by Unsolved Labs. The correctness claim is supported by the public proof, exact finite certificates, and two independently implemented verification paths described below.
+> This research artifact was generated with frontier AI and released by Unsolved Labs. The correctness claim is supported by the public proof, exact finite certificates, two independently implemented verification paths, and a partial Lean formalization of the load-bearing strength-3 local lower bound.
 
 ## Result
 
@@ -40,19 +40,32 @@ Within each mandatory class, covering selected interactions forces exact local b
 
 Because an interaction containing a class-defining false parameter can only be covered by a row from that class, the nine classwise bounds add. This yields lower bounds $18,45,72,144,144$. The published witnesses meet those bounds exactly and are therefore optimal.
 
+The nontrivial local strength-3 fact—four rows cannot pairwise cover four binary columns, while the displayed five-row block does—is additionally checked by Lean 4 in [`R003Formal/Industrial8.lean`](R003Formal/Industrial8.lean). This is a supplementary formalization layer; it does not replace or broaden the theorem stated in the paper manuscript.
+
 See the [paper manuscript](manuscript/r003_industrial8_exact_optima.pdf) and the GitHub-rendered [proof note](proof.md).
 
 ## Verification
 
-Three complementary checks are public:
+Four complementary checks are public:
 
 1. **Source/provenance check** — [`verify_sources.py`](verify_sources.py) verifies that the frozen benchmark bytes exactly match the pinned upstream Git blob and that the frozen 2023 competition excerpt has best valid strength-3 size 54.
 2. **Primary exact verifier** — [`verify.py`](verify.py) independently enumerates all 24,576 raw assignments, obtains the 159 valid configurations, enumerates every feasible interaction at strengths 2–6, reads the **published CSV witnesses**, checks complete coverage, and exhaustively solves the 16-row class-local lower-bound subproblems.
 3. **Independent C++20 verifier** — [`verify_independent.cpp`](verify_independent.cpp) separately parses and evaluates the benchmark constraint text, re-enumerates the model and all interactions, reads the published witnesses, and independently brute-forces the local binary minima.
+4. **Lean 4 formalization** — the pinned Lean/Mathlib project proves the local pairwise covering minimum is at least five by ruling out every four-row array and verifies the explicit five-row block. CI also runs an independent Lean type checker with proof placeholders disallowed.
+
+The Lean component is deliberately described as **partial formalization**: it does not claim a full Lean proof of the entire constrained-model theorem. The global model reduction and all released witnesses are instead covered by the human proof and two exact finite replay paths.
 
 No optimizer, language model, floating-point solver, network service, or search trace is required to replay the final correctness claim.
 
 ### Reproduce from a clean checkout
+
+Run the complete finite replay and the Lean build when Lean is installed:
+
+```bash
+./verify_release.sh
+```
+
+Or run the components separately:
 
 ```bash
 python3 verify_sources.py
@@ -60,6 +73,8 @@ python3 verify.py
 
 g++ -std=c++20 -O2 -Wall -Wextra -pedantic verify_independent.cpp -o verify_independent
 ./verify_independent
+
+lake build
 ```
 
 The committed [`verification-report.json`](verification-report.json) is deterministic. To regenerate it:
@@ -69,7 +84,7 @@ python3 verify.py --write-report
 git diff --exit-code verification-report.json
 ```
 
-Full verification details and trust boundaries are in [`VERIFICATION.md`](VERIFICATION.md).
+Full verification details and trust boundaries are in [`VERIFICATION.md`](VERIFICATION.md). Lean metadata is in [`formalization.yaml`](formalization.yaml).
 
 ## Exact claim boundary
 
@@ -108,12 +123,15 @@ See [`SOURCE_AUDIT.md`](SOURCE_AUDIT.md).
 - `verify_independent.cpp` — independent parser/verifier
 - `verify_sources.py` — source-integrity replay
 - `verification-report.json` — deterministic machine-readable result
+- `R003Formal/` — supplementary partial Lean formalization of the local strength-3 lower bound
+- `formalization.yaml` — machine-readable formalization scope and declarations
 
 ## Status
 
 - Public construction and proof: **available**
 - Exact primary verification: **available**
 - Independent implementation replay: **available**
+- Partial Lean formalization of the local strength-3 bound: **available**
 - External specialist review: **pending**
 - Peer review: **not claimed**
 

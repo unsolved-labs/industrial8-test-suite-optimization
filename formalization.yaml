@@ -1,0 +1,54 @@
+version: "v0.3"
+
+project:
+  name: "industrial8-test-suite-optimization"
+  authors:
+    - "Unsolved Labs"
+
+sources:
+  - title: "Exact Constrained Covering Arrays for the INDUSTRIAL_8 Benchmark"
+    authors:
+      - "Unsolved Labs"
+    id: "manuscript/r003_industrial8_exact_optima.pdf"
+    publication_date: "2026-08-17"
+    type: "paper"
+    prior_work: |-
+      https://fmselab.github.io/ct-competition/results/2023/index2023.html
+      https://doi.org/10.1016/j.jss.2023.111920
+
+status:
+  scope: >-
+    Supplementary partial Lean formalization of the load-bearing local
+    strength-3 covering-array bound used by R003. The Lean declarations rule
+    out a four-row binary pairwise cover on four columns and verify the
+    explicit five-row block. The full frozen-model reduction and exact minima
+    at strengths 2 through 6 are additionally checked by independent Python
+    and C++ exact finite verifiers and are not claimed as fully Lean-formalized.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+  main_results:
+    - name: "Four rows cannot pairwise cover four binary columns"
+      declaration: "R003.noFourRowPairwiseCover"
+      file: "R003Formal/Industrial8.lean"
+      sorry_count: 0
+      axioms: []
+    - name: "The explicit five-row block pairwise covers four binary columns"
+      declaration: "R003.baseFivePairwiseCovers"
+      file: "R003Formal/Industrial8.lean"
+      sorry_count: 0
+      axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models:
+        - "frontier AI"
+      framework: "Unsolved Labs research workflow"
+  notes: >-
+    Search and generation are outside the final correctness oracle; public
+    correctness is supported by the manuscript, exact replay artifacts, and
+    the checked Lean declarations listed above.
+
+review:
+  status: "pending-independent-specialist-review"
