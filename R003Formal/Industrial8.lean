@@ -11,6 +11,12 @@ def PairwiseCovers {n : Nat} (suite : Fin n → Row) : Prop :=
   ∀ c₁ c₂ : Col, c₁ ≠ c₂ → ∀ a b : Bit,
     ∃ r : Fin n, suite r c₁ = a ∧ suite r c₂ = b
 
+/-- `PairwiseCovers` is decidable for every finite suite. -/
+instance pairwiseCoversDecidable {n : Nat} (suite : Fin n → Row) :
+    Decidable (PairwiseCovers suite) := by
+  unfold PairwiseCovers
+  infer_instance
+
 /-- The row-to-pair map associated with two columns. -/
 def pairMap {n : Nat} (suite : Fin n → Row) (c₁ c₂ : Col) :
     Fin n → Bit × Bit := fun r => (suite r c₁, suite r c₂)
