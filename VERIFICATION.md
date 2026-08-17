@@ -104,8 +104,8 @@ PASS independent local subset search proves minima 2,5,8,16.
 The supplementary Lean project is pinned by:
 
 - `lean-toolchain`: Lean `v4.32.0`;
-- `lakefile.toml`: Mathlib `v4.32.0`;
-- `formalization.yaml`: declaration-level scope and review metadata.
+- `lakefile.toml` and `lake-manifest.json`: Mathlib `v4.32.0` and its exact dependency graph;
+- `formalization.yaml`: declaration-level scope, axiom audit, and review metadata.
 
 Build:
 
@@ -119,6 +119,17 @@ The main declarations are:
 - `R003.baseFivePairwiseCovers` — the explicit five-row block used in the proof does have full pairwise coverage.
 
 These declarations certify the nontrivial local fact needed for the strength-3 lower bound. They **do not** formalize the full constrained-model theorem. The nine-class structural reduction, full model semantics, interaction enumeration, and the other strengths remain covered by the manuscript plus the independent Python/C++ exact replays.
+
+Both finite Lean theorems use ordinary `decide`, not `native_decide` or an external computation oracle. The four-row theorem raises Lean's reduction resource limits because the complete finite decision tree exceeds the conservative default recursion depth; changing those limits does not add a proof axiom.
+
+The expected `#print axioms` audit is:
+
+```text
+R003.noFourRowPairwiseCover: [propext, Quot.sound]
+R003.baseFivePairwiseCovers: [propext, Quot.sound]
+```
+
+Those standard logical axioms arise from Mathlib's finite-type/finset decision infrastructure and are recorded explicitly in `formalization.yaml`. `sorryAx`, `Classical.choice`, and a native-decision oracle are not allowed for these declarations.
 
 Production Lean files are required to contain no `sorry` or `admit`. CI runs `leanprover/lean-action` with `nanoda` and `nanoda-allow-sorry: false`, adding a separate Lean type-checking implementation to the trust-reduction stack.
 
