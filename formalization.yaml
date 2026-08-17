@@ -1,7 +1,7 @@
 version: "v0.3"
 
 project:
-  name: "R003 INDUSTRIAL_8 lower-bound core in Lean"
+  name: "R003 INDUSTRIAL_8 auxiliary lower-bound formalization"
   authors:
     - "Unsolved Labs"
   license: "all-rights-reserved"
@@ -17,32 +17,25 @@ sources:
 
 status:
   scope: >-
-    Auxiliary Lean 4 and Mathlib formalization of the exact finite covering
-    minima 2, 5, 8, and 16 on the four free Boolean coordinates used by the
-    R003 class-local lower bounds, plus the arithmetic aggregation across nine
-    mandatory classes. The full INDUSTRIAL_8 parser, class decomposition, and
-    witness-coverage theorem remain independently verified by exact Python and
-    C++ implementations and are not claimed Lean-formalized.
+    Auxiliary Lean 4 and Mathlib verification of the nontrivial local
+    strength-3 covering-array obstruction (no four distinct four-bit rows
+    cover all binary pairs), the explicit five-row local witness, and the
+    arithmetic aggregation across nine mandatory classes. The exact local
+    minima 2,5,8,16 are exhaustively checked by the independent Python and C++
+    verifiers; the full INDUSTRIAL_8 parser, class decomposition, and witness
+    coverage theorem are not claimed Lean-formalized.
   sorry_count: 0
   sorry_in_definitions: 0
   notes: >-
-    This is a partial formalization of the load-bearing finite lower-bound
-    core, not a Lean formalization of the complete R003 theorem.
+    This is a partial formalization of a load-bearing lower-bound subproblem,
+    not a Lean formalization of the complete R003 theorem.
   axioms: []
   main_results:
-    - declaration: "R003.localOneWayMinimum"
+    - declaration: "R003.pairwiseFourRowObstruction"
       file: "R003/LocalCovering.lean"
       sorry_count: 0
       axioms: []
-    - declaration: "R003.localPairwiseMinimum"
-      file: "R003/LocalCovering.lean"
-      sorry_count: 0
-      axioms: []
-    - declaration: "R003.localThreeWayMinimum"
-      file: "R003/LocalCovering.lean"
-      sorry_count: 0
-      axioms: []
-    - declaration: "R003.localFourWayMinimum"
+    - declaration: "R003.pairwiseFiveRowWitness"
       file: "R003/LocalCovering.lean"
       sorry_count: 0
       axioms: []
@@ -67,39 +60,32 @@ automation:
 
 fidelity:
   divergences: >-
-    Lean formalizes the four-bit local covering subproblems and nine-class
-    arithmetic aggregation. The benchmark-text semantics, proof that the
-    frozen model has nine mandatory classes, and complete witness coverage are
-    checked by the independent exact Python and C++ verification paths rather
-    than represented inside Lean.
+    Lean checks the four-row pairwise obstruction, the five-row pairwise
+    witness, and nine-class arithmetic aggregation. The exact minima 2,5,8,16,
+    benchmark-text semantics, proof that the frozen model has nine mandatory
+    classes, and complete witness coverage are checked by the independent
+    exact Python and C++ verification paths rather than represented inside Lean.
 
 review:
   status: "hybrid-machine-verified"
   reviewers: []
   notes: >-
     No independent specialist peer review is claimed. Machine verification
-    consists of pinned Lean checking of the auxiliary lower-bound core plus two
-    independent exact replays of the complete frozen-model claim.
+    consists of pinned Lean checking of the auxiliary pairwise obstruction and
+    aggregation theorem plus two independent exact replays of the complete
+    frozen-model claim.
 
 alignment:
   statements:
-    - source: "Manuscript Lemma: local one-way minimum"
-      lean: "R003.localOneWayMinimum"
+    - source: "Manuscript Lemma: four rows cannot cover all binary pairs"
+      lean: "R003.pairwiseFourRowObstruction"
       module: "R003.LocalCovering"
       status: "proved"
-    - source: "Manuscript Lemma: local pairwise minimum"
-      lean: "R003.localPairwiseMinimum"
+    - source: "Manuscript five-row local pairwise witness"
+      lean: "R003.pairwiseFiveRowWitness"
       module: "R003.LocalCovering"
       status: "proved"
-    - source: "Manuscript Lemma: local three-way minimum"
-      lean: "R003.localThreeWayMinimum"
-      module: "R003.LocalCovering"
-      status: "proved"
-    - source: "Manuscript Lemma: local four-way minimum"
-      lean: "R003.localFourWayMinimum"
-      module: "R003.LocalCovering"
-      status: "proved"
-    - source: "Nine mandatory classes multiply the local minimum"
+    - source: "Nine mandatory classes multiply a class-local lower bound"
       lean: "R003.nineClassSumLower"
       module: "R003.LocalCovering"
       status: "proved"

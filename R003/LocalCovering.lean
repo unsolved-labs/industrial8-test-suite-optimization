@@ -2,13 +2,7 @@ import Mathlib
 
 namespace R003
 
-/-- A local row is one of the 16 four-bit assignments, encoded by a natural number 0..15. -/
-abbrev WordCode := Nat
-
-/-- A local test suite is encoded by a 16-bit membership mask. -/
-abbrev SuiteMask := Nat
-
-/-- The four coordinate sets whose interactions of arity `r` must be covered. -/
+/-- The coordinate sets whose local interactions of arity `r` must be covered. -/
 def coordSets : Nat → List (List Nat)
   | 1 => [[0], [1], [2], [3]]
   | 2 => [[0,1], [0,2], [0,3], [1,2], [1,3], [2,3]]
@@ -16,71 +10,35 @@ def coordSets : Nat → List (List Nat)
   | 4 => [[0,1,2,3]]
   | _ => []
 
-/-- Whether a local row is selected by the suite mask. -/
-def selected (mask : SuiteMask) (word : WordCode) : Bool :=
-  mask.testBit word
-
-/-- Number of selected local rows among the 16 possible four-bit assignments. -/
-def selectedCount (mask : SuiteMask) : Nat :=
-  (List.range 16).foldl (fun acc word => if selected mask word then acc + 1 else acc) 0
-
 /-- Whether two encoded four-bit words agree on every coordinate in `coords`. -/
-def agreesOn (word target : WordCode) (coords : List Nat) : Bool :=
+def agreesOn (word target : Nat) (coords : List Nat) : Bool :=
   coords.all fun c => word.testBit c == target.testBit c
 
-/-- Exact finite local coverage predicate for interactions of arity `r`. -/
-def covers (r : Nat) (mask : SuiteMask) : Bool :=
+/-- Whether the listed local rows cover every interaction of arity `r`. -/
+def coversWords (r : Nat) (words : List Nat) : Bool :=
   (List.range 16).all fun target =>
     (coordSets r).all fun coords =>
-      (List.range 16).any fun word => selected mask word && agreesOn word target coords
+      words.any fun word => agreesOn word target coords
 
-/-- Kernel-checkable exhaustive certificate: no suite of cardinality `< n` covers all local interactions. -/
-def noSmallerCover (r n : Nat) : Bool :=
-  (List.range 65536).all fun mask =>
-    if selectedCount mask < n then !(covers r mask) else true
+/-- Exhaustive certificate that no four distinct local rows cover all binary pairs. -/
+def noFourDistinctRowsCoverPairs : Bool :=
+  (List.range 16).all fun a =>
+    (List.range 16).all fun b =>
+      (List.range 16).all fun c =>
+        (List.range 16).all fun d =>
+          if a < b ∧ b < c ∧ c < d then !(coversWords 2 [a,b,c,d]) else true
 
-/-- Kernel-checkable explicit witness certificate at cardinality exactly `n`. -/
-def witnessCheck (r n : Nat) (mask : SuiteMask) : Bool :=
-  selectedCount mask == n && covers r mask
-
-/-- Combined exact-minimum certificate for a given explicit witness mask. -/
-def exactMinimumCheck (r n : Nat) (witness : SuiteMask) : Bool :=
-  noSmallerCover r n && witnessCheck r n witness
-
-/-- Two complementary rows, 0000 and 1111. -/
-def oneWayWitness : SuiteMask := 32769
-
-/-- Five-row pairwise witness {0000,0111,1011,1101,1110}. -/
-def pairwiseWitness : SuiteMask := 26753
-
-/-- Eight even-parity rows. -/
-def threeWayWitness : SuiteMask := 38505
-
-/-- All sixteen rows. -/
-def fourWayWitness : SuiteMask := 65535
+/-- The five-row pairwise covering array used by the R003 construction. -/
+def pairwiseWitness : List Nat := [0, 7, 11, 13, 14]
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
-/-- Exact local minimum used by the global strength-2 lower bound. -/
-theorem localOneWayMinimum : exactMinimumCheck 1 2 oneWayWitness = true := by
+/-- Kernel-checked finite obstruction underlying the strength-3 local lower bound. -/
+theorem pairwiseFourRowObstruction : noFourDistinctRowsCoverPairs = true := by
   decide
 
-set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
-/-- Exact local minimum used by the global strength-3 lower bound. -/
-theorem localPairwiseMinimum : exactMinimumCheck 2 5 pairwiseWitness = true := by
-  decide
-
-set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
-/-- Exact local minimum used by the global strength-4 lower bound. -/
-theorem localThreeWayMinimum : exactMinimumCheck 3 8 threeWayWitness = true := by
-  decide
-
-set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
-/-- Exact local minimum used by the global strength-5/6 lower bounds. -/
-theorem localFourWayMinimum : exactMinimumCheck 4 16 fourWayWitness = true := by
+/-- Kernel-checked explicit five-row local pairwise witness. -/
+theorem pairwiseFiveRowWitness : coversWords 2 pairwiseWitness = true := by
   decide
 
 /-- If nine disjoint classes each contribute at least `m` rows, their total contributes at least `9*m`. -/
