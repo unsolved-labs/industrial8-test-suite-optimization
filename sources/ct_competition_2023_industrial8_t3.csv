@@ -1,0 +1,7 @@
+ToolName,ModelName,Strength,TimeSeconds,Size,ErrorType
+caopt,INDUSTRIAL_8,3,1.18,55,
+acts,INDUSTRIAL_8,3,0.83,68,
+cagen,INDUSTRIAL_8,3,0.0,68,
+kali,INDUSTRIAL_8,3,3.22,71,Invalid
+medici,INDUSTRIAL_8,3,4.94,49,Invalid
+pmedici,INDUSTRIAL_8,3,2.29,54,

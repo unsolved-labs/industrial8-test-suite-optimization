@@ -1,0 +1,42 @@
+{
+  "comparison": {
+    "description": "Frozen CT-Competition 2023 best valid INDUSTRIAL_8 strength-3 entry",
+    "invalid_49_row_entry_excluded": true,
+    "size": 54,
+    "source_blob_sha1": "414bc2b1d47a8cd5a8e7263b5fa01e1104929da3",
+    "source_commit": "3c8cdc1ac9eb4e045404d8db75ce38bad7541808",
+    "source_repository": "https://github.com/fmselab/ct-competition"
+  },
+  "exact_optima": {
+    "2": 18,
+    "3": 45,
+    "4": 72,
+    "5": 144,
+    "6": 144
+  },
+  "model": {
+    "file": "INDUSTRIAL_8.txt",
+    "sha256": "01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4",
+    "upstream_blob_sha1": "4ede6ee93f6eea06927f972cf5ba22621ecc3013",
+    "upstream_commit": "7ed44c18a771b9bbdc444a3c9178a7a68510a53f",
+    "upstream_repository": "https://github.com/fmselab/CIT_Benchmark_Generator"
+  },
+  "peer_review": false,
+  "release": "R003",
+  "review_status": "pending",
+  "title": "Exact constrained test-suite optimization for INDUSTRIAL_8",
+  "valid_interactions": {
+    "2": 326,
+    "3": 2168,
+    "4": 9374,
+    "5": 28192,
+    "6": 61272
+  },
+  "verification": {
+    "independent": "verify_independent.cpp",
+    "primary": "verify.py",
+    "report": "verification-report.json",
+    "search_or_ai_generation_required_for_replay": false,
+    "source_integrity": "verify_sources.py"
+  }
+}

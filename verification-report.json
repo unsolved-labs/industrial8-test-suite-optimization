@@ -1,0 +1,73 @@
+{
+  "local_minima": {
+    "1": 2,
+    "2": 5,
+    "3": 8,
+    "4": 16
+  },
+  "mandatory_classes": 9,
+  "model": "INDUSTRIAL_8",
+  "model_git_blob_sha1": "4ede6ee93f6eea06927f972cf5ba22621ecc3013",
+  "model_sha256": "01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4",
+  "raw_assignments": 24576,
+  "release": "R003",
+  "residual_configurations": 15,
+  "source_comparison": {
+    "frozen_2023_best_valid_strength3_size": 54,
+    "invalid_49_row_entry_excluded": true,
+    "tool": "pmedici"
+  },
+  "strengths": {
+    "2": {
+      "class_local_exact_minimum": 2,
+      "global_lower_bound": 18,
+      "optimal": true,
+      "valid_interactions": 326,
+      "witness_file": "industrial8_t2_opt18.csv",
+      "witness_rows": 18,
+      "witness_sha256": "bec4dfebc6457ddb9fdbe08aabbe5e3a21b7fb12e18a0fefb09e83bc3e2460b9"
+    },
+    "3": {
+      "class_local_exact_minimum": 5,
+      "global_lower_bound": 45,
+      "optimal": true,
+      "valid_interactions": 2168,
+      "witness_file": "industrial8_t3_opt45.csv",
+      "witness_rows": 45,
+      "witness_sha256": "6bc1f68ce2793af13277cb05377e551ea47644dd38a1bdfca4c777cacd42ac77"
+    },
+    "4": {
+      "class_local_exact_minimum": 8,
+      "global_lower_bound": 72,
+      "optimal": true,
+      "valid_interactions": 9374,
+      "witness_file": "industrial8_t4_opt72.csv",
+      "witness_rows": 72,
+      "witness_sha256": "93a82cc071b1441bf35d4932a5914e75bb0c0a75c4a0d48ee0a0959bb62343e2"
+    },
+    "5": {
+      "class_local_exact_minimum": 16,
+      "global_lower_bound": 144,
+      "optimal": true,
+      "valid_interactions": 28192,
+      "witness_file": "industrial8_t5_opt144.csv",
+      "witness_rows": 144,
+      "witness_sha256": "18c878e4cae90f26cf8275f01fe75bde5f32f3ea6837ac94b8e1a2e3e5f199b2"
+    },
+    "6": {
+      "class_local_exact_minimum": 16,
+      "global_lower_bound": 144,
+      "optimal": true,
+      "valid_interactions": 61272,
+      "witness_file": "industrial8_t6_opt144.csv",
+      "witness_rows": 144,
+      "witness_sha256": "18c878e4cae90f26cf8275f01fe75bde5f32f3ea6837ac94b8e1a2e3e5f199b2"
+    }
+  },
+  "trust_boundary": {
+    "independent": "C++20 model parser/evaluator, CSV replay, interaction enumeration, and local subset search",
+    "primary": "Python 3 standard-library exact enumeration and exhaustive local subset search",
+    "search_or_ai_generation_required_for_replay": false
+  },
+  "valid_configurations": 159
+}
