@@ -134,3 +134,9 @@ jobs:
         run: |
           pdflatex -interaction=nonstopmode -halt-on-error r003_industrial8_exact_optima.tex
           pdflatex -interaction=nonstopmode -halt-on-error r003_industrial8_exact_optima.tex
+
+      - name: Upload manuscript PDF
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: r003-industrial8-manuscript
+          path: manuscript/r003_industrial8_exact_optima.pdf
