@@ -1,422 +1,214 @@
 \documentclass[11pt]{article}
-
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage[a4paper,margin=0.9in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\usepackage[a4paper,margin=1in]{geometry}
 \usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
 
-\title{Exact Constrained Covering Arrays for the \texttt{INDUSTRIAL\_8} Benchmark}
-\author{Unsolved Labs\\\small Research artifact generated with frontier AI}
-\date{Research Release R003}
+\title{Exact constrained covering arrays for the public \texttt{INDUSTRIAL\_8} benchmark}
+\author{Unsolved Labs}
+\date{Research Release R003 -- August 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We determine the exact minimum sizes of constrained covering arrays for the
-public \texttt{INDUSTRIAL\_8} benchmark at interaction strengths
-$t=2,\ldots,6$.  If $N_t$ denotes the minimum number of valid configurations
-covering every feasible $t$-way interaction, then
-\[
-(N_2,N_3,N_4,N_5,N_6)=(18,45,72,144,144).
-\]
-For strength three, the frozen 2023 CT-Competition result table records 54
-tests as the smallest valid entry for this benchmark; a 49-row entry in the
-same table is marked invalid.  The released 45-row array therefore improves
-that frozen valid comparison by nine rows, or $16.7\%$, and a matching lower
-bound proves optimality.  The proof reduces the model to nine disjoint
-mandatory classes, each with four free Boolean coordinates.  The only
-nontrivial local covering number is the binary pairwise problem on four
-columns, whose exact value is five.  The release includes explicit witnesses
-for all five strengths, an exact Python verifier, and an independently
-implemented C++20 verifier that parses and evaluates the model text directly.
-Both implementations exhaustively enumerate the finite verification
-obligations.
-\end{abstract}
-
-\paragraph{Release attribution.}
-This research artifact was generated with frontier AI and released by
-Unsolved Labs.  Correctness is not asserted on the authority of the generating
-system: the theorem, source provenance, finite witnesses, and independent
-verification paths are public and reproducible.
-
-\section{Introduction}
-
-Combinatorial interaction testing seeks small test suites that cover every
-feasible interaction among selected input parameters.  In the constrained
-setting, only tuples extendable to a valid full configuration are required to
-be covered.  This distinction is essential for industrial input-parameter
-models, where constraints can remove a large fraction of the Cartesian
-product.
-
-The \texttt{INDUSTRIAL\_8} instance considered here is a public evaluation
-model from the 2023 Combinatorial Testing Competition.  The benchmark family
-and its generator are described by Bombarda and Gargantini
-\cite{bombarda2024}.  The competition evaluated tools by test-suite size and
-generation time, with validity and completeness required for a result to be
-accepted \cite{ctcompetition2023}.
-
-The contribution of this release is an exact solution of this particular
-finite benchmark at strengths two through six.  The argument has two layers.
-First, the constraint system admits a simple structural decomposition into
-nine disjoint classes in which four Boolean parameters remain free.  This
-gives analytic lower bounds by reducing to tiny binary covering problems.
-Second, explicit constructions attain those lower bounds.  Because the model
-has only $24{,}576$ raw assignments, complete validity and interaction
-coverage can also be checked by exact enumeration.
-
-The resulting exact optima are
+For the public CT Competition 2023 model \texttt{INDUSTRIAL\_8}, we determine the exact minimum number $N_t$ of valid configurations required to cover every valid $t$-way interaction for strengths $t=2,\ldots,6$:
 \[
 N_2=18,\qquad N_3=45,\qquad N_4=72,\qquad N_5=N_6=144.
 \]
-At strength three, the pinned 2023 result table contains valid sizes
-$55,68,68,54$ and invalid entries of sizes $71$ and $49$ for this model.
-Thus the frozen best valid comparison is 54, while the present array has 45
-rows.
+For strength $3$, the pinned 2023 competition results contain a best valid public suite of 54 tests. The released 45-row suite reduces this comparison by 9 tests (16.7\%) and is optimal for the frozen model. The lower bounds follow from a structural decomposition into nine disjoint mandatory classes; the matching upper bounds are explicit test suites. Two independent exact implementations replay every released witness against all valid interactions, and the nontrivial local five-row covering-array bound used at strength 3 is additionally formalized in Lean 4. The research artifact was generated with frontier AI; search and generation are outside the final correctness oracle.
+\end{abstract}
 
-The comparison claim is intentionally narrow.  It is a strict improvement
-over the pinned public 2023 table, not a claim that no later private,
-unpublished, differently normalized, or independently produced construction
-ever existed.
+\section{Introduction}
+Combinatorial interaction testing seeks small test suites in which every relevant interaction among parameter values is exercised. In constrained models, only globally valid configurations and interactions that can occur in at least one valid configuration are required. The second CT Competition compared state-of-the-art generators on a public benchmark set across strengths 2 through 6 \cite{ctcompetition2023}. The public benchmark generator and its validation methodology are described by Bombarda and Gargantini \cite{bombarda2024}.
 
-\section{The frozen model}
+This paper studies one frozen evaluation model, \texttt{INDUSTRIAL\_8} \cite{citbenchmark2023}. The result is exact rather than heuristic: the repository includes explicit constructions and matching lower bounds for every competition strength. At strength 3 the pinned competition table records valid suites of sizes 55, 68, 68, and 54; entries of sizes 71 and 49 are marked invalid. Thus 54 is the best valid value in that frozen table, while the construction proved here has size 45.
 
-The exact benchmark bytes are included as
-\texttt{INDUSTRIAL\_8.txt}.  They are byte-for-byte identical to the upstream
-Git blob
-\[
-\texttt{4ede6ee93f6eea06927f972cf5ba22621ecc3013}
-\]
-at commit
-\[
-\texttt{7ed44c18a771b9bbdc444a3c9178a7a68510a53f}
-\]
-of the public \texttt{fmselab/CIT\_Benchmark\_Generator} repository.
-The SHA-256 digest is
-\[
-\texttt{01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4}.
-\]
+The proof is deliberately separated from the search process that discovered the constructions. The final trust boundary consists of the frozen benchmark, the analytic lower bounds below, explicit CSV witnesses, two independent exact replay implementations, and a Lean proof of the most delicate local strength-3 covering-array fact.
 
-There are Boolean parameters $p_1,\ldots,p_{13}$ and a three-valued
-parameter $p_{14}\in\{v1,v2,v3\}$.
+\section{Frozen model and coverage convention}
+The model has Boolean parameters $p_1,\ldots,p_{13}$ and a three-valued parameter $p_{14}\in\{v1,v2,v3\}$. The exact source file is frozen in the public repository. \texttt{SOURCE\_AUDIT.md} pins the upstream commit, Git blob, and SHA-256 digest:
+\begin{quote}\small
+commit: \path{7ed44c18a771b9bbdc444a3c9178a7a68510a53f}\\
+Git blob: \path{4ede6ee93f6eea06927f972cf5ba22621ecc3013}\\
+SHA-256: \path{01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4}
+\end{quote}
 
-\begin{proposition}[Structure of the valid configuration set]
-\label{prop:structure}
-The model has exactly $159$ valid configurations.  They decompose into:
+A \emph{valid $t$-way interaction} is a choice of $t$ distinct parameter positions together with values that occur jointly in at least one globally valid model configuration. A test suite has strength $t$ if it covers every valid $t$-way interaction. Let $N_t$ be the minimum cardinality of such a suite.
+
+\section{Structural reduction}
+The model constraints imply the following facts.
+
+\begin{lemma}[Model structure]\label{lem:structure}
+Every valid configuration satisfies:
 \begin{enumerate}
-  \item for each $q\in\{p_5,\ldots,p_{12}\}$, a class of $16$ configurations
-  with $q=\mathrm{false}$, all other $p_5,\ldots,p_{12}$ true, and
-  $p_{13}=\mathrm{true}$;
-  \item a class of $16$ configurations with $p_{13}=\mathrm{false}$ and
-  $p_5,\ldots,p_{12}$ all true;
-  \item $15$ residual configurations with $p_5,\ldots,p_{13}$ all true and
-  $(p_1,p_2,p_3,p_4)$ not all true.
+  \item $p_{14}\neq v3$;
+  \item $p_{14}=v1$ if and only if $p_3=\mathrm{true}$, and otherwise $p_{14}=v2$;
+  \item among $p_5,\ldots,p_{12}$, at most one parameter is false;
+  \item if $p_{13}=\mathrm{false}$, then $p_5,\ldots,p_{12}$ are all true;
+  \item the assignment $p_1=\cdots=p_{13}=\mathrm{true}$ is forbidden.
 \end{enumerate}
-In each of the first nine classes, the four coordinates
-$p_1,p_2,p_3,p_4$ range freely over $\{0,1\}^4$.
-\end{proposition}
+Consequently the model has exactly 159 valid configurations.
+\end{lemma}
 
 \begin{proof}
-The pairwise disjunction constraints among $p_5,\ldots,p_{12}$ imply that at
-most one of these eight parameters may be false.  The eight constraints
-$p_{13}=\mathrm{true}\lor p_i=\mathrm{true}$ imply that if
-$p_{13}$ is false, then all of $p_5,\ldots,p_{12}$ are true.
-
-The constraints on $p_{14}$ forbid $v3$, permit $v1$ only when $p_3$ is true,
-and permit $v2$ only when $p_3$ is false.  Hence $p_{14}$ is uniquely
-determined by $p_3$.  Finally, the last constraint forbids the assignment in
-which $p_1,\ldots,p_{13}$ are all true.
-
-For each of the eight choices of a false parameter among
-$p_5,\ldots,p_{12}$, the first four Boolean coordinates are unrestricted,
-giving $8\cdot16=128$ configurations.  When $p_{13}$ is false, the first four
-coordinates are again unrestricted, giving $16$ more.  When
-$p_5,\ldots,p_{13}$ are all true, the all-true choice of
-$p_1,\ldots,p_4$ is excluded and the other $15$ choices remain.  Thus
-$128+16+15=159$.
+The first two statements are direct rewrites of the three constraints on $p_{14}$. The pairwise clauses among $p_5,\ldots,p_{12}$ forbid two simultaneous false values. The clauses $p_{13}=\mathrm{true}\lor p_i=\mathrm{true}$, $5\le i\le 12$, give the fourth statement. The final long disjunction gives the fifth. Counting then yields eight classes of 16 configurations with exactly one of $p_5,\ldots,p_{12}$ false, one class of 16 configurations with $p_{13}$ false, and 15 residual all-true middle configurations, for $8\cdot 16+16+15=159$.
 \end{proof}
 
-We call the first nine classes in Proposition~\ref{prop:structure}
-\emph{mandatory classes}.  They are pairwise disjoint.
+Call the first nine 16-element groups the \emph{mandatory classes}. They are disjoint, and within each one the four coordinates $p_1,\ldots,p_4$ range freely over $\{0,1\}^4$.
+
+\paragraph{Class additivity.}
+Any interaction that fixes the defining false parameter of a mandatory class can only be covered by a row from that class. Hence lower bounds established independently inside the nine mandatory classes add.
 
 \section{Lower bounds}
+Fix one mandatory class. Since $p_1,\ldots,p_4$ are free inside the class, interactions involving the class-defining false parameter force standard binary covering requirements on those four coordinates.
 
-Fix one mandatory class, and let $q$ denote its class-defining parameter,
-fixed to false.  Any interaction containing the condition $q=\mathrm{false}$
-can only be covered by a row from this class.  Consequently, lower bounds
-proved independently inside each mandatory class add across the nine classes.
-
-\begin{lemma}[Local one-way minimum]
-\label{lem:one}
-At least two rows are required in each mandatory class for global strength
-two.
+\subsection{Strength 2}
+\begin{lemma}[Local one-way minimum]\label{lem:one}
+At least two rows are required in each mandatory class for global strength 2.
 \end{lemma}
-
 \begin{proof}
-For any one of the free coordinates $p_1,\ldots,p_4$, both interactions
-\[
-(q=\mathrm{false},p_i=\mathrm{false})
-\quad\text{and}\quad
-(q=\mathrm{false},p_i=\mathrm{true})
-\]
-are feasible.  One row cannot cover both values.
+Fixing the class-defining false parameter and one of $p_1,\ldots,p_4$ requires both Boolean values, so one row cannot suffice.
 \end{proof}
+Across the nine disjoint mandatory classes this gives
+\[
+N_2\ge 9\cdot 2=18.
+\]
 
-\begin{lemma}[Local pairwise minimum]
-\label{lem:pair}
-The minimum number of four-bit words that covers every binary pair on every
-pair of coordinates is five.
+\subsection{Strength 3}
+Fixing the class-defining false parameter and two of $p_1,\ldots,p_4$ requires a binary pairwise covering array on four columns.
+
+\begin{lemma}\label{lem:ca5}
+Four rows cannot pairwise cover four binary columns, while five rows suffice.
 \end{lemma}
 
 \begin{proof}
-Four words are impossible.  If four rows covered every pair, then for every
-pair of columns the four ordered pairs $00,01,10,11$ would each occur exactly
-once.  After permuting rows and complementing columns, normalize two columns
-to
-\[
-0011\qquad\text{and}\qquad0101.
-\]
-A third balanced column that is pairwise orthogonal to both is, up to
-complement,
-\[
-0110.
-\]
-There is no fourth balanced column simultaneously orthogonal to all three.
-Thus at least five rows are necessary.
+If four rows covered all four value pairs on every column pair, then for every pair of columns the pairs $00,01,10,11$ would each occur exactly once. After permuting rows and complementing columns, normalize two columns to $0011$ and $0101$. Up to complement, the unique balanced column orthogonal to both is $0110$, leaving no fourth balanced column orthogonal to all three. Thus four rows are impossible.
 
-Five suffice:
+Five rows suffice via
 \[
 B=\{0000,0111,1011,1101,1110\}.
 \]
-A direct inspection shows that every pair of coordinates contains all four
-binary ordered pairs.
+The impossibility and the explicit five-row witness are also checked by Lean in \path{R003Formal/Industrial8.lean}.
 \end{proof}
 
-\begin{lemma}[Local three-way minimum]
-\label{lem:three}
-At least eight rows are required in each mandatory class for global strength
-four.
+Thus each mandatory class needs at least five rows and
+\[
+N_3\ge 9\cdot 5=45.
+\]
+
+\subsection{Strength 4}
+\begin{lemma}[Local three-way minimum]\label{lem:three}
+At least eight rows are required in each mandatory class for global strength 4.
 \end{lemma}
-
 \begin{proof}
-Fix any three of the four free coordinates.  All $2^3=8$ assignments to that
-triple are feasible within the class, and each selected row realizes only one
-of them.
+Fixing the class-defining false parameter and any three of $p_1,\ldots,p_4$ requires all $2^3=8$ triples.
 \end{proof}
+Thus
+\[
+N_4\ge 9\cdot 8=72.
+\]
 
-\begin{lemma}[Local four-way minimum]
-\label{lem:four}
-At least sixteen rows are required in each mandatory class for global
-strength five, and the same lower bound holds for global strength six.
+\subsection{Strengths 5 and 6}
+\begin{lemma}[Local four-way minimum]\label{lem:four}
+At least sixteen rows are required in each mandatory class for global strengths 5 and 6.
 \end{lemma}
-
 \begin{proof}
-At strength five, combine $q=\mathrm{false}$ with all four free coordinates.
-All $2^4=16$ assignments are feasible, so sixteen class rows are necessary.
-
-At strength six, add any one of the remaining parameters among
-$p_5,\ldots,p_{13}$ that is forced true in the chosen class.  The resulting
-six-way interactions still require all sixteen assignments of the four free
-coordinates.
+At strength 5, fixing the class-defining false parameter and all four free Boolean coordinates requires all $2^4=16$ assignments. At strength 6, add any parameter forced true in the class; the same 16 four-bit assignments remain necessary.
 \end{proof}
+Therefore
+\[
+N_5\ge 144,\qquad N_6\ge144.
+\]
 
-\begin{theorem}[Global lower bounds]
-\label{thm:lower}
+\begin{theorem}[Global lower bounds]\label{thm:lower}
 For the frozen benchmark,
 \[
-N_2\ge18,\qquad
-N_3\ge45,\qquad
-N_4\ge72,\qquad
-N_5\ge144,\qquad
-N_6\ge144.
+N_2\ge18,\quad N_3\ge45,\quad N_4\ge72,\quad N_5\ge144,\quad N_6\ge144.
 \]
 \end{theorem}
-
 \begin{proof}
-The nine mandatory classes are disjoint, and an interaction containing a
-class-defining false parameter can only be covered from that class.  Multiply
-the exact class-local bounds from
-Lemmas~\ref{lem:one}--\ref{lem:four} by nine.
+Each bound is the corresponding exact class-local requirement multiplied by the nine disjoint mandatory classes.
 \end{proof}
 
-As an independent finite check, both released verifiers also enumerate all
-subsets of the sixteen four-bit words and recover the exact local minima
-$2,5,8,16$.
-
-\section{Constructions and exact optima}
-
+\section{Matching constructions}
 All constructions use only mandatory-class rows.
 
-For strength two, choose two complementary four-bit words in each class,
-cycling four different cut patterns across the nine classes.
+For strength 2, use two complementary four-bit words per class and cycle four cut types across the nine classes. For strength 3, use translations of the five-row block $B$ by $0000$, $0001$, $0010$, and $0011$, cycling these translations across the classes. For strength 4, alternate the even- and odd-parity eight-word sets; each realizes every triple on four coordinates. For strengths 5 and 6, use all 16 four-bit words in every mandatory class.
 
-For strength three, start from the five-word binary pairwise covering array
-\[
-B=\{0000,0111,1011,1101,1110\}.
-\]
-Translate it by
-\[
-0000,\quad0001,\quad0010,\quad0011
-\]
-and cycle these translations through the nine classes.
+The repository releases a concrete CSV witness for every strength. Exact replay gives:
 
-For strength four, alternate the even-parity and odd-parity eight-word
-subsets of $\{0,1\}^4$.  Each subset realizes every assignment on every
-three chosen coordinates.
-
-For strengths five and six, use all sixteen four-bit words in every mandatory
-class.
-
-The explicit rows are published as CSV files.  Exact enumeration gives the
-coverage counts in Table~\ref{tab:optima}.
-
-\begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rrrr}
 \toprule
-Strength & Feasible interactions & Witness rows & Lower bound\\
+Strength & valid interactions & released rows & lower bound \\
 \midrule
-2 & 326 & 18 & 18\\
-3 & 2,168 & 45 & 45\\
-4 & 9,374 & 72 & 72\\
-5 & 28,192 & 144 & 144\\
-6 & 61,272 & 144 & 144\\
+2 & 326 & 18 & 18 \\
+3 & 2,168 & 45 & 45 \\
+4 & 9,374 & 72 & 72 \\
+5 & 28,192 & 144 & 144 \\
+6 & 61,272 & 144 & 144 \\
 \bottomrule
 \end{tabular}
-\caption{Exact replay of the released witnesses.}
-\label{tab:optima}
-\end{table}
+\end{center}
 
-\begin{theorem}[Exact optima]
-\label{thm:main}
-For the frozen \texttt{INDUSTRIAL\_8} model,
+The lower and upper bounds therefore agree at every strength.
+
+\begin{theorem}[Exact optima]\label{thm:main}
+For the frozen CT Competition 2023 \texttt{INDUSTRIAL\_8} model,
 \[
-(N_2,N_3,N_4,N_5,N_6)=(18,45,72,144,144).
+N_2=18,\qquad N_3=45,\qquad N_4=72,\qquad N_5=N_6=144.
 \]
 \end{theorem}
-
 \begin{proof}
-Theorem~\ref{thm:lower} gives the lower bounds.  The explicit released
-witnesses have exactly those sizes.  The two independent exact verification
-paths enumerate all feasible interactions and confirm that each witness
-covers the complete corresponding interaction set.
+Theorem~\ref{thm:lower} gives the lower bounds. The released CSV witnesses have exactly those sizes, and both exact replay implementations verify complete coverage of every feasible interaction.
 \end{proof}
 
 \section{Verification and reproducibility}
+The public repository contains three complementary verification layers.
 
-The final correctness claim is intentionally separated from the process that
-found the constructions.
+\paragraph{Python exact verifier.}
+\texttt{verify.py} checks the byte identity of the benchmark against the pinned upstream Git blob, reads the released witness CSVs, enumerates all 24,576 raw assignments, reconstructs the 159 valid configurations and all valid interactions, and verifies each witness against the matching analytic lower bound. It also checks the frozen 2023 comparison excerpt and the deterministic machine-readable verification report.
 
-The primary verifier, \texttt{verify.py}, uses only the Python standard
-library.  It checks the frozen source hashes, enumerates all $24{,}576$ raw
-assignments, obtains the $159$ valid configurations, exhaustively solves the
-class-local binary covering subproblems, reads the published witness CSVs,
-enumerates every feasible interaction at strengths two through six, and
-checks complete coverage.
+\paragraph{Independent C++ replay.}
+\texttt{verify\_independent.cpp} does not call or import the Python verifier. It independently parses the parameter domains and Boolean constraint expressions from the frozen model text, evaluates every raw assignment, reads the same released witness CSVs, rebuilds every feasible interaction set, and separately brute-forces the class-local covering minima.
 
-The independent verifier, \texttt{verify\_independent.cpp}, does not import or
-call the Python implementation.  It parses the parameter domains and Boolean
-constraint expressions from \texttt{INDUSTRIAL\_8.txt}, evaluates those
-expressions for every raw assignment, parses the witness CSVs independently,
-re-enumerates all interactions, and separately brute-forces the class-local
-covering minima.
+\paragraph{Lean.}
+The Lean project formalizes Lemma~\ref{lem:ca5}: the impossibility of a four-row pairwise cover on four binary columns and correctness of the explicit five-row block. The impossibility theorem follows the structural bijection argument above; the explicit five-row witness is checked by ordinary finite \texttt{decide}. This is intentionally described as a partial formalization: the full model reduction and the other exact minima remain supported by the human argument and two exact finite replay paths. The declarations contain no \texttt{sorry} or \texttt{admit}; the public axiom audit is recorded in \texttt{formalization.yaml}.
 
-The public replay commands are:
-\begin{verbatim}
-python3 verify_sources.py
-python3 verify.py
+All finite release checks are invoked by \texttt{./verify\_release.sh} and mirrored in GitHub Actions. The Lean project is pinned to Lean 4 / Mathlib v4.32.0 and is built with \texttt{lake build}; CI additionally invokes an independent Lean type checker with proof placeholders disallowed.
 
-g++ -std=c++20 -O2 -Wall -Wextra -pedantic \
-    verify_independent.cpp -o verify_independent
-./verify_independent
-\end{verbatim}
+\section{Related work, comparison boundary, and limitations}
+The benchmark family and generator are public research artifacts described in the software-testing literature \cite{bombarda2024}. The frozen benchmark is pinned to commit \texttt{7ed44c18a771} of the public benchmark-generator repository. The strength-3 numerical comparison is limited to the frozen 2023 results file at commit \texttt{3c8cdc1ac9eb} of the public competition repository. \texttt{SOURCE\_AUDIT.md} records the complete repository paths, commit identifiers, and Git blobs. The release does not claim that 54 remained the best result in every later source, nor does it claim a general theorem for arbitrary constrained industrial models. External specialist review and peer review remain pending.
 
-The deterministic file \texttt{verification-report.json} records the source
-identity, witness hashes, interaction counts, and exact lower bounds.
-Search traces, optimizers, language-model generation, and network services are
-not required for replay.
-
-No Lean formalization is claimed.  The mathematical reduction is elementary,
-and the only nontrivial finite local covering problem is exhaustively solved
-twice by independent implementations.  A future proof-assistant development
-could formalize the class decomposition and the implication from local
-covering minima to Theorem~\ref{thm:lower}; until such code exists, the result
-must not be described as Lean-verified.
-
-\section{Comparison, provenance, and limitations}
-
-The frozen benchmark is pinned to the public
-\texttt{fmselab/CIT\_Benchmark\_Generator} repository at commit
-\texttt{7ed44c18a771}.  The 2023 comparison is pinned to
-\texttt{fmselab/ct-competition} at commit \texttt{3c8cdc1ac9eb}.
-The complete immutable commit and blob identifiers are recorded in
-\texttt{SOURCE\_AUDIT.md}.  The latter table records the six
-\texttt{INDUSTRIAL\_8}, strength-three entries shown in
-Table~\ref{tab:competition}.
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{lrl}
-\toprule
-Tool & Size & Source-table status\\
-\midrule
-caopt & 55 & valid\\
-acts & 68 & valid\\
-cagen & 68 & valid\\
-kali & 71 & invalid\\
-medici & 49 & invalid\\
-pmedici & 54 & valid\\
-\bottomrule
-\end{tabular}
-\caption{Frozen CT-Competition 2023 results for
-\texttt{INDUSTRIAL\_8} at strength three.}
-\label{tab:competition}
-\end{table}
-
-The smallest valid entry in this table is therefore 54.  The R003 witness has
-45 rows, so the exact improvement relative to that frozen valid comparison is
-$54-45=9$ rows, i.e.
-\[
-\frac{9}{54}=\frac16\approx16.7\%.
-\]
-
-This release does not claim a general formula for arbitrary constrained
-covering arrays.  It also does not claim that the pinned 2023 table exhausts
-all later or unpublished constructions.  External specialist review remains
-pending, and peer review is not claimed.
+\section*{AI-origin disclosure}
+This research release was generated with frontier AI. Public correctness claims rely on the explicit proof and verification artifacts described above rather than on the generation process itself.
 
 \begin{thebibliography}{9}
 
 \bibitem{bombarda2024}
 Andrea Bombarda and Angelo Gargantini.
-\newblock Design, implementation, and validation of a benchmark generator for
-combinatorial interaction testing tools.
+\newblock Design, implementation, and validation of a benchmark generator for combinatorial interaction testing tools.
 \newblock \emph{Journal of Systems and Software}, 209:111920, 2024.
 \newblock \url{https://doi.org/10.1016/j.jss.2023.111920}.
 
 \bibitem{ctcompetition2023}
-Combinatorial Testing Competition.
-\newblock Second edition / 2023 evaluation rules and results.
+CT Competition organizers.
+\newblock Second edition of the Combinatorial Interaction Testing Competition, 2023.
 \newblock \url{https://fmselab.github.io/ct-competition/results/2023/index2023.html}.
 
-\bibitem{benchmarkrepo}
-FOSELab.
-\newblock CIT Benchmark Generator, frozen \texttt{INDUSTRIAL\_8} source at
-commit \texttt{7ed44c18a771b9bbdc444a3c9178a7a68510a53f}.
+\bibitem{citbenchmark2023}
+FMSE Lab.
+\newblock CIT Benchmark Generator: \texttt{INDUSTRIAL\_8} evaluation model, 2023.
 \newblock \url{https://github.com/fmselab/CIT_Benchmark_Generator}.
-
-\bibitem{competitionrepo}
-FOSELab.
-\newblock CT-Competition result data, frozen 2023 output table at commit
-\texttt{3c8cdc1ac9eb4e045404d8db75ce38bad7541808}.
-\newblock \url{https://github.com/fmselab/ct-competition}.
 
 \end{thebibliography}
 
