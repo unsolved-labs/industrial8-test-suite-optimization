@@ -2,81 +2,85 @@ import Mathlib
 
 namespace R003
 
-/-- A row of the four free Boolean coordinates inside one mandatory class. -/
-abbrev Word := Fin 4 → Bool
+/-- A local row is one of the 16 four-bit assignments, encoded by a natural number 0..15. -/
+abbrev WordCode := Nat
 
-/-- A candidate local test suite, represented as a Boolean selection of the 16 possible rows. -/
-abbrev Selection := Word → Bool
+/-- A local test suite is encoded by a 16-bit membership mask. -/
+abbrev SuiteMask := Nat
 
-/-- Number of selected rows. -/
-def selectionCard (s : Selection) : Nat :=
-  ∑ w : Word, if s w then 1 else 0
+/-- The four coordinate sets whose interactions of arity `r` must be covered. -/
+def coordSets : Nat → List (List Nat)
+  | 1 => [[0], [1], [2], [3]]
+  | 2 => [[0,1], [0,2], [0,3], [1,2], [1,3], [2,3]]
+  | 3 => [[0,1,2], [0,1,3], [0,2,3], [1,2,3]]
+  | 4 => [[0,1,2,3]]
+  | _ => []
 
-/-- Every one-coordinate binary interaction is represented. -/
-def Covers1 (s : Selection) : Prop :=
-  ∀ target : Word, ∀ i : Fin 4,
-    ∃ w : Word, s w = true ∧ w i = target i
+/-- Whether a local row is selected by the suite mask. -/
+def selected (mask : SuiteMask) (word : WordCode) : Bool :=
+  mask.testBit word
 
-/-- Every two-coordinate binary interaction on distinct coordinates is represented. -/
-def Covers2 (s : Selection) : Prop :=
-  ∀ target : Word, ∀ i j : Fin 4, i ≠ j →
-    ∃ w : Word, s w = true ∧ w i = target i ∧ w j = target j
+/-- Number of selected local rows among the 16 possible four-bit assignments. -/
+def selectedCount (mask : SuiteMask) : Nat :=
+  (List.range 16).foldl (fun acc word => if selected mask word then acc + 1 else acc) 0
 
-/-- Every three-coordinate binary interaction on distinct coordinates is represented. -/
-def Covers3 (s : Selection) : Prop :=
-  ∀ target : Word, ∀ i j k : Fin 4,
-    i ≠ j → i ≠ k → j ≠ k →
-      ∃ w : Word,
-        s w = true ∧ w i = target i ∧ w j = target j ∧ w k = target k
+/-- Whether two encoded four-bit words agree on every coordinate in `coords`. -/
+def agreesOn (word target : WordCode) (coords : List Nat) : Bool :=
+  coords.all fun c => word.testBit c == target.testBit c
 
-/-- Every assignment on all four free Boolean coordinates is represented. -/
-def Covers4 (s : Selection) : Prop :=
-  ∀ target : Word, s target = true
+/-- Exact finite local coverage predicate for interactions of arity `r`. -/
+def covers (r : Nat) (mask : SuiteMask) : Bool :=
+  (List.range 16).all fun target =>
+    (coordSets r).all fun coords =>
+      (List.range 16).any fun word => selected mask word && agreesOn word target coords
 
-instance covers1Decidable (s : Selection) : Decidable (Covers1 s) := by
-  unfold Covers1
-  infer_instance
+/-- Kernel-checkable exhaustive certificate: no suite of cardinality `< n` covers all local interactions. -/
+def noSmallerCover (r n : Nat) : Bool :=
+  (List.range 65536).all fun mask =>
+    if selectedCount mask < n then !(covers r mask) else true
 
-instance covers2Decidable (s : Selection) : Decidable (Covers2 s) := by
-  unfold Covers2
-  infer_instance
+/-- Kernel-checkable explicit witness certificate at cardinality exactly `n`. -/
+def witnessCheck (r n : Nat) (mask : SuiteMask) : Bool :=
+  selectedCount mask == n && covers r mask
 
-instance covers3Decidable (s : Selection) : Decidable (Covers3 s) := by
-  unfold Covers3
-  infer_instance
+/-- Combined exact-minimum certificate for a given explicit witness mask. -/
+def exactMinimumCheck (r n : Nat) (witness : SuiteMask) : Bool :=
+  noSmallerCover r n && witnessCheck r n witness
 
-instance covers4Decidable (s : Selection) : Decidable (Covers4 s) := by
-  unfold Covers4
-  infer_instance
+/-- Two complementary rows, 0000 and 1111. -/
+def oneWayWitness : SuiteMask := 32769
 
-/-- `n` is the exact minimum size among all local selections satisfying `covers`. -/
-def ExactMinimum (covers : Selection → Prop)
-    [∀ s, Decidable (covers s)] (n : Nat) : Prop :=
-  (∀ s : Selection, covers s → n ≤ selectionCard s) ∧
-  (∃ s : Selection, selectionCard s = n ∧ covers s)
+/-- Five-row pairwise witness {0000,0111,1011,1101,1110}. -/
+def pairwiseWitness : SuiteMask := 26753
+
+/-- Eight even-parity rows. -/
+def threeWayWitness : SuiteMask := 38505
+
+/-- All sixteen rows. -/
+def fourWayWitness : SuiteMask := 65535
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-2 lower bound. -/
-theorem localOneWayMinimum : ExactMinimum Covers1 2 := by
+theorem localOneWayMinimum : exactMinimumCheck 1 2 oneWayWitness = true := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-3 lower bound. -/
-theorem localPairwiseMinimum : ExactMinimum Covers2 5 := by
+theorem localPairwiseMinimum : exactMinimumCheck 2 5 pairwiseWitness = true := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-4 lower bound. -/
-theorem localThreeWayMinimum : ExactMinimum Covers3 8 := by
+theorem localThreeWayMinimum : exactMinimumCheck 3 8 threeWayWitness = true := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-5/6 lower bounds. -/
-theorem localFourWayMinimum : ExactMinimum Covers4 16 := by
+theorem localFourWayMinimum : exactMinimumCheck 4 16 fourWayWitness = true := by
   decide
 
 /-- If nine disjoint classes each contribute at least `m` rows, their total contributes at least `9*m`. -/
