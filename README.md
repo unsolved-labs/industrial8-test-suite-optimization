@@ -43,7 +43,7 @@ The only nontrivial local combinatorial obstruction is the pairwise minimum 5 on
 ## Read the proof
 
 - [GitHub-rendered proof note](proof.md)
-- [LaTeX manuscript source](manuscript/r003_industrial8_exact_optima.tex) - CI compiles this source from a clean checkout
+- [LaTeX manuscript source](manuscript/r003_industrial8_exact_optima.tex) - CI compiles this source from a clean checkout and publishes the resulting PDF as a workflow artifact
 - [Manuscript build instructions](manuscript/README.md)
 - [Exact claim and non-claims](CLAIM.md)
 - [Statement-to-evidence crosswalk](STATEMENT_AUDIT.md)
@@ -60,7 +60,17 @@ R003 deliberately uses complementary assurance methods rather than treating any 
 4. **Auxiliary Lean formalization** - `R003/LocalCovering.lean` kernel-checks the nontrivial four-row pairwise obstruction, the explicit five-row witness, and the nine-class arithmetic aggregation theorem. It is intentionally **not** presented as a full Lean formalization of the benchmark parser, mandatory-class decomposition, or complete witness-coverage theorem.
 5. **CI trust checks** - Lean and Mathlib are pinned; production Lean sources are scanned for proof shortcuts; an axiom audit runs at `--trust=0`; and `leanchecker --fresh` replays the compiled formalization.
 
-### Clean-checkout replay
+### One-command clean-checkout replay
+
+With Python 3, a C++20 compiler, and the pinned Lean/Lake toolchain available:
+
+```bash
+./verify_release.sh
+```
+
+The script replays frozen-source identity, the Python proof checker, the independent C++ parser/checker, deterministic report freshness, the pinned Lean build, the production-source shortcut scan, the trust-zero axiom audit, and the fresh Lean kernel replay.
+
+The same components can be run separately:
 
 ```bash
 python3 verify_sources.py
@@ -96,7 +106,7 @@ The repository does not claim that the complete theorem is Lean-formalized. Exte
 
 - `INDUSTRIAL_8.txt` - frozen benchmark.
 - `industrial8_t*_opt*.csv` - explicit optimal witnesses.
-- `manuscript/` - paper source and deterministic build instructions.
+- `manuscript/` - paper source, build instructions, and CI-generated PDF artifact.
 - `proof.md` - GitHub-rendered proof.
 - `R003/` / `R003.lean` - auxiliary Lean lower-bound formalization and axiom audit.
 - `formalization.yaml` - machine-readable formalization scope and declarations.
@@ -104,6 +114,9 @@ The repository does not claim that the complete theorem is Lean-formalized. Exte
 - `VERIFICATION.md` - reproduction and trust boundary.
 - `SOURCE_AUDIT.md` - benchmark/comparison provenance.
 - `verify.py`, `verify_independent.cpp`, `verify_sources.py` - exact replay paths.
+- `verify_release.sh` - one-command public replay of the complete verification stack.
 - `verification-report.json` - deterministic machine-readable results.
+- `CITATION.cff` - citation metadata.
+- `LICENSE` - public research-use notice and rights statement.
 
 Public release page: https://unsolved-labs.github.io/results/r003-industrial8/

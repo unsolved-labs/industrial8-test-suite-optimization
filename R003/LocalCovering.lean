@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 
 namespace R003
 
