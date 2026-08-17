@@ -1,33 +1,33 @@
 # R003 statement audit
 
-This file maps every load-bearing public statement to its paper statement and machine-checkable evidence.
+This crosswalk maps each load-bearing public statement to the paper and machine evidence. "Lean" below means the scoped auxiliary formalization, not a formalization of the complete benchmark theorem.
 
-| Public statement | Manuscript location | Primary verification | Independent verification |
+| Public statement | Manuscript | Complete exact replay | Lean evidence |
 |---|---|---|---|
-| The frozen benchmark has 24,576 raw assignments. | §2 | `verify.py`: product of 13 binary domains and one 3-valued domain | `verify_independent.cpp`: parses domains from `INDUSTRIAL_8.txt` |
-| Exactly 159 configurations satisfy the constraints. | Proposition 1, §2 | `verify.py`: exact enumeration under the pinned semantics | C++ parser evaluates the constraint text on every raw assignment |
-| The valid configurations split into nine 16-row mandatory classes plus 15 residual rows. | Proposition 1, §2 | class census in `verify.py` | independent class census in C++ |
-| Class-local 1-way binary covering minimum is 2. | Lemma 2, §3 | exhaustive subset search over all 16 four-bit words | independent C++ subset search |
-| Class-local 2-way binary covering minimum is 5. | Lemma 3, §3 | exhaustive subset search over all 16 four-bit words | independent C++ subset search |
-| Class-local 3-way binary covering minimum is 8. | Lemma 4, §3 | exhaustive subset search | independent C++ subset search |
-| Class-local 4-way binary covering minimum is 16. | Lemma 5, §3 | exhaustive subset search | independent C++ subset search |
-| $N_2\ge18$, $N_3\ge45$, $N_4\ge72$, $N_5,N_6\ge144$. | Theorem 6, §3 | nine disjoint mandatory classes × exact local minima | same lower-bound reconstruction in C++ |
-| The published strength-2 witness has 18 valid distinct rows and covers all 326 valid 2-way interactions. | §4 and Table 2 | `verify.py` reads `industrial8_t2_opt18.csv` | C++ reads the same CSV and re-enumerates interactions |
-| The published strength-3 witness has 45 valid distinct rows and covers all 2,168 valid 3-way interactions. | §4 and Table 2 | `verify.py` reads `industrial8_t3_opt45.csv` | C++ reads the same CSV and re-enumerates interactions |
-| The published strength-4 witness has 72 rows and covers all 9,374 valid interactions. | §4 and Table 2 | primary exact replay | independent C++ replay |
-| The published strength-5 witness has 144 rows and covers all 28,192 valid interactions. | §4 and Table 2 | primary exact replay | independent C++ replay |
-| The published strength-6 witness has 144 rows and covers all 61,272 valid interactions. | §4 and Table 2 | primary exact replay | independent C++ replay |
-| Therefore the exact optima are 18,45,72,144,144. | Theorem 7, §4 | each witness size equals its exact lower bound | same conclusion independently replayed |
-| The frozen 2023 comparison has best valid strength-3 size 54. | §1 and §5 | `verify_sources.py` checks the frozen excerpt | source commit/blob is independently auditable |
-| The 49-row competition entry is excluded because it is marked `Invalid`. | §5 | source excerpt check | pinned source table |
-| 45 improves 54 by nine rows, i.e. $1/6\approx16.7\%$. | §1 | exact integer arithmetic | direct arithmetic |
+| The frozen benchmark has 24,576 raw assignments. | Section 2 | Python product enumeration; C++ parses domains | Not formalized |
+| Exactly 159 configurations satisfy the frozen constraints. | Proposition 1 | independent Python/C++ exhaustive enumeration | Not formalized |
+| Valid configurations split into nine 16-row mandatory classes plus 15 residual rows. | Proposition 1 | independent Python/C++ class census | Not formalized |
+| Class-local 1-way binary covering minimum is 2. | Lemma 2 | independent Python/C++ subset search | Not a standalone Lean theorem |
+| Class-local 2-way binary covering minimum is 5. | Lemma 3 | independent Python/C++ subset search | `pairwiseFourRowObstruction` + `pairwiseFiveRowWitness` |
+| Class-local 3-way binary covering minimum is 8. | Lemma 4 | independent Python/C++ subset search | Not a standalone Lean theorem |
+| Class-local 4-way binary covering minimum is 16. | Lemma 5 | independent Python/C++ subset search | Not a standalone Lean theorem |
+| Nine disjoint classes multiply a class-local bound by 9. | Theorem 6 proof | reconstructed independently in Python/C++ | `nineClassSumLower` and arithmetic specializations |
+| $N_2\ge18$, $N_3\ge45$, $N_4\ge72$, $N_5,N_6\ge144$. | Theorem 6 | exact local minima + nine-class decomposition | Aggregation arithmetic is formalized; model-to-class hypotheses are not |
+| Published strength-2 witness has 18 valid rows covering all 326 interactions. | Section 4 | independent Python/C++ replay of CSV | Not formalized |
+| Strength-3 witness has 45 valid rows covering all 2,168 interactions. | Section 4 | independent Python/C++ replay of CSV | Not formalized |
+| Strength-4 witness has 72 rows covering all 9,374 interactions. | Section 4 | independent Python/C++ replay | Not formalized |
+| Strength-5 witness has 144 rows covering all 28,192 interactions. | Section 4 | independent Python/C++ replay | Not formalized |
+| Strength-6 witness has 144 rows covering all 61,272 interactions. | Section 4 | independent Python/C++ replay | Not formalized |
+| Exact optima are 18,45,72,144,144. | Theorem 7 | lower bounds + witness coverage in two complete exact implementations | Partial lower-bound core only |
+| Frozen 2023 comparison has best valid strength-3 size 54; the 49-row row is invalid. | Sections 1 and 5 | `verify_sources.py` + pinned source excerpt | Not formalized |
+| 45 improves 54 by 9 rows = 1/6 ≈16.7%. | Sections 1 and 5 | exact arithmetic | Not formalized |
 
-## Statement identity rule
+## Formalization identity
 
-The canonical public theorem is the statement in `CLAIM.md` / `claim.json`. If the README, manuscript, release page, or verifier output changes its scope, this audit must be updated in the same pull request.
+The public Lean declarations and scope are listed in `formalization.yaml`. Production Lean code is pinned by `lean-toolchain` and `lake-manifest.json`, scanned for proof shortcuts, audited for axioms, and replayed with `leanchecker --fresh` in CI.
 
-## What is not machine-formalized
+The formalization must not be described as proving the complete R003 theorem unless future code formally links the frozen benchmark semantics, mandatory-class decomposition, and witness coverage to the final theorem.
 
-No Lean proof is claimed in this release. The mathematical lower bound is short, and its only nontrivial finite subproblem—the impossibility of a 4-row binary pairwise covering array on four columns—is exhaustively checked twice by independent implementations. The full constrained-model theorem is additionally verified by exhaustive enumeration of all 24,576 raw assignments and every feasible interaction.
+## Canonical statement rule
 
-A future Lean formalization could reduce the trusted mathematical layer further, but the present claim must not be described as Lean-verified.
+`CLAIM.md` and `claim.json` are the canonical claim boundary. Any change in README, manuscript, release page, verification code, or formalization scope that affects that boundary must update this crosswalk in the same pull request.
