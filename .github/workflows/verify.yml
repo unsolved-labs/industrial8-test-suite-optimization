@@ -40,6 +40,83 @@ jobs:
       - name: Reject Python syntax errors
         run: python3 -m py_compile verify.py verify_sources.py
 
+  lean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up pinned Lean environment
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+
+      - name: Verify exact Lean and Mathlib pins
+        run: |
+          set -euo pipefail
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.32.0"
+          lake env lean --version
+          test "$(git -C .lake/packages/mathlib rev-parse HEAD)" = \
+            "81a5d257c8e410db227a6665ed08f64fea08e997"
+
+      - name: Build auxiliary lower-bound formalization
+        env:
+          LEAN_NUM_THREADS: '2'
+        run: |
+          set -euo pipefail
+          lake build R003 R003.Audit
+
+      - name: Reject Lean proof shortcuts
+        run: |
+          python3 - <<'PYSCAN'
+          import pathlib, re, sys
+          sources = [pathlib.Path('R003.lean')] + sorted(pathlib.Path('R003').rglob('*.lean'))
+          pattern = re.compile(r'\b(?:sorry|admit|native_decide)\b|debug\.skipKernelTC|Lean\.ofReduceBool|^\s*(?:axiom|opaque|unsafe|extern|partial)\b|^\s*@\[implemented_by')
+          hits = []
+          for path in sources:
+              for line_number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+                  if path.name == 'Audit.lean':
+                      continue
+                  if pattern.search(line):
+                      hits.append(f'{path}:{line_number}:{line}')
+          if hits:
+              print('\n'.join(hits))
+              sys.exit(1)
+          print(f'Lean production-source scan is empty across {len(sources)-1} files.')
+          PYSCAN
+
+      - name: Trust-zero axiom audit
+        run: |
+          set -euo pipefail
+          lake env lean --trust=0 R003/Audit.lean 2>&1 | tee lean-axioms.log
+          python3 - <<'PYAX'
+          import pathlib, re, sys
+          text = pathlib.Path('lean-axioms.log').read_text(encoding='utf-8')
+          for marker in ('sorryAx', 'Lean.trustCompiler'):
+              if marker in text:
+                  print(f'Forbidden Lean trust marker: {marker}')
+                  sys.exit(1)
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for group in re.findall(r'depends on axioms:\s*\[([^\]]*)\]', text, flags=re.S):
+              names = {n.strip() for n in group.replace('\n', ' ').split(',') if n.strip()}
+              unexpected = names - allowed
+              if unexpected:
+                  print(f'Unexpected axioms: {sorted(unexpected)}')
+                  sys.exit(1)
+          print('Lean axiom audit contains no forbidden or unexpected trust assumptions.')
+          PYAX
+
+      - name: Fresh kernel replay
+        run: lake env leanchecker --fresh R003.LocalCovering
+
   manuscript:
     runs-on: ubuntu-latest
     steps:

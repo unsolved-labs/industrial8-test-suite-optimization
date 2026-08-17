@@ -1,0 +1,105 @@
+version: "v0.3"
+
+project:
+  name: "R003 INDUSTRIAL_8 lower-bound core in Lean"
+  authors:
+    - "Unsolved Labs"
+  license: "all-rights-reserved"
+
+sources:
+  - title: "Exact Constrained Covering Arrays for the INDUSTRIAL_8 Benchmark"
+    authors:
+      - "Unsolved Labs"
+    id: "manuscript/r003_industrial8_exact_optima.pdf"
+    type: "paper"
+    license: "all-rights-reserved"
+    author_contacted: "n/a"
+
+status:
+  scope: >-
+    Auxiliary Lean 4 and Mathlib formalization of the exact finite covering
+    minima 2, 5, 8, and 16 on the four free Boolean coordinates used by the
+    R003 class-local lower bounds, plus the arithmetic aggregation across nine
+    mandatory classes. The full INDUSTRIAL_8 parser, class decomposition, and
+    witness-coverage theorem remain independently verified by exact Python and
+    C++ implementations and are not claimed Lean-formalized.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  notes: >-
+    This is a partial formalization of the load-bearing finite lower-bound
+    core, not a Lean formalization of the complete R003 theorem.
+  axioms: []
+  main_results:
+    - declaration: "R003.localOneWayMinimum"
+      file: "R003/LocalCovering.lean"
+      sorry_count: 0
+      axioms: []
+    - declaration: "R003.localPairwiseMinimum"
+      file: "R003/LocalCovering.lean"
+      sorry_count: 0
+      axioms: []
+    - declaration: "R003.localThreeWayMinimum"
+      file: "R003/LocalCovering.lean"
+      sorry_count: 0
+      axioms: []
+    - declaration: "R003.localFourWayMinimum"
+      file: "R003/LocalCovering.lean"
+      sorry_count: 0
+      axioms: []
+    - declaration: "R003.nineClassSumLower"
+      file: "R003/LocalCovering.lean"
+      sorry_count: 0
+      axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models:
+        - "GPT-5.6 Sol"
+      framework: "OpenAI"
+      tool_setup: >-
+        Used to implement and debug the public auxiliary formalization and
+        verification engineering. Final claims are accepted only after the
+        pinned Lean kernel build and independent exact replays succeed.
+  notes: >-
+    This is an AI-generated public research artifact maintained by Unsolved
+    Labs. No conventional human authorship is implied.
+
+fidelity:
+  divergences: >-
+    Lean formalizes the four-bit local covering subproblems and nine-class
+    arithmetic aggregation. The benchmark-text semantics, proof that the
+    frozen model has nine mandatory classes, and complete witness coverage are
+    checked by the independent exact Python and C++ verification paths rather
+    than represented inside Lean.
+
+review:
+  status: "hybrid-machine-verified"
+  reviewers: []
+  notes: >-
+    No independent specialist peer review is claimed. Machine verification
+    consists of pinned Lean checking of the auxiliary lower-bound core plus two
+    independent exact replays of the complete frozen-model claim.
+
+alignment:
+  statements:
+    - source: "Manuscript Lemma: local one-way minimum"
+      lean: "R003.localOneWayMinimum"
+      module: "R003.LocalCovering"
+      status: "proved"
+    - source: "Manuscript Lemma: local pairwise minimum"
+      lean: "R003.localPairwiseMinimum"
+      module: "R003.LocalCovering"
+      status: "proved"
+    - source: "Manuscript Lemma: local three-way minimum"
+      lean: "R003.localThreeWayMinimum"
+      module: "R003.LocalCovering"
+      status: "proved"
+    - source: "Manuscript Lemma: local four-way minimum"
+      lean: "R003.localFourWayMinimum"
+      module: "R003.LocalCovering"
+      status: "proved"
+    - source: "Nine mandatory classes multiply the local minimum"
+      lean: "R003.nineClassSumLower"
+      module: "R003.LocalCovering"
+      status: "proved"
