@@ -120,16 +120,16 @@ The main declarations are:
 
 These declarations certify the nontrivial local fact needed for the strength-3 lower bound. They **do not** formalize the full constrained-model theorem. The nine-class structural reduction, full model semantics, interaction enumeration, and the other strengths remain covered by the manuscript plus the independent Python/C++ exact replays.
 
-Both finite Lean theorems use ordinary `decide`, not `native_decide` or an external computation oracle. The four-row theorem raises Lean's reduction resource limits because the complete finite decision tree exceeds the conservative default recursion depth; changing those limits does not add a proof axiom.
+The four-row impossibility is formalized by the structural combinatorial argument from the manuscript: coverage on two columns gives a bijection from the four rows to the four binary pairs; the first two columns then force the remaining two columns into incompatible pair patterns. The explicit five-row block is checked by ordinary finite `decide`. Neither theorem uses `native_decide`, `sorry`, or `admit`.
 
 The expected `#print axioms` audit is:
 
 ```text
-R003.noFourRowPairwiseCover: [propext, Quot.sound]
+R003.noFourRowPairwiseCover: [propext, Classical.choice, Quot.sound]
 R003.baseFivePairwiseCovers: [propext, Quot.sound]
 ```
 
-Those standard logical axioms arise from Mathlib's finite-type/finset decision infrastructure and are recorded explicitly in `formalization.yaml`. `sorryAx`, `Classical.choice`, and a native-decision oracle are not allowed for these declarations.
+These standard logical axioms are recorded explicitly in `formalization.yaml`. `sorryAx` and a native-decision/compiler oracle are not allowed for the final declarations.
 
 Production Lean files are required to contain no `sorry` or `admit`. CI runs `leanprover/lean-action` with `nanoda` and `nanoda-allow-sorry: false`, adding a separate Lean type-checking implementation to the trust-reduction stack.
 
