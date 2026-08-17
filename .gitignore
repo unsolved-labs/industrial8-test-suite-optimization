@@ -6,3 +6,8 @@ manuscript/*.aux
 manuscript/*.log
 manuscript/*.out
 manuscript/*.toc
+manuscript/*.pdf
+
+# Lean build products
+.lake/
+lean-axioms.log

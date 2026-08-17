@@ -33,10 +33,15 @@
     "6": 61272
   },
   "verification": {
-    "independent": "verify_independent.cpp",
     "primary": "verify.py",
+    "independent": "verify_independent.cpp",
+    "source_integrity": "verify_sources.py",
     "report": "verification-report.json",
-    "search_or_ai_generation_required_for_replay": false,
-    "source_integrity": "verify_sources.py"
+    "auxiliary_formalization": {
+      "metadata": "formalization.yaml",
+      "module": "R003.LocalCovering",
+      "scope": "Pairwise four-row obstruction, explicit five-row pairwise witness, and nine-class lower-bound aggregation only; not a full Lean formalization of the frozen-model theorem."
+    },
+    "search_or_ai_generation_required_for_replay": false
   }
 }

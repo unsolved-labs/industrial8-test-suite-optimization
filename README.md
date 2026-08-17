@@ -1,20 +1,20 @@
-# R003 — Exact constrained test-suite optimization for `INDUSTRIAL_8`
+# R003 - Exact constrained test-suite optimization for `INDUSTRIAL_8`
 
 **Unsolved Labs Research Release R003**
 
-This release proves the exact minimum number of valid tests needed for the frozen public `INDUSTRIAL_8` constrained combinatorial-interaction-testing benchmark at strengths 2 through 6.
+R003 determines the exact minimum number of valid tests needed to cover every feasible interaction of the frozen public `INDUSTRIAL_8` constrained combinatorial-testing benchmark at strengths 2 through 6.
 
-> This research artifact was generated with frontier AI and released by Unsolved Labs. The correctness claim is supported by the public proof, exact finite certificates, and two independently implemented verification paths described below.
+Research artifact generated with frontier AI and released by Unsolved Labs. Correctness is supported by a public proof, explicit optimal witnesses, two independently implemented exact replay paths, and a pinned Lean 4 formalization of a load-bearing lower-bound core. External specialist review remains **pending**.
 
-## Result
+## Exact result
 
-Let $N_t$ be the minimum number of valid configurations required to cover every feasible $t$-way interaction of the frozen benchmark model. Then
+Let $N_t$ be the minimum number of valid configurations required to cover every feasible $t$-way interaction of the frozen model. Then
 
 $$
 N_2=18,\qquad N_3=45,\qquad N_4=72,\qquad N_5=N_6=144.
 $$
 
-| Strength | Valid interactions | Exact minimum | Published witness |
+| Strength | Feasible interactions | Exact minimum | Published witness |
 |---:|---:|---:|---|
 | 2 | 326 | 18 | [`industrial8_t2_opt18.csv`](industrial8_t2_opt18.csv) |
 | 3 | 2,168 | **45** | [`industrial8_t3_opt45.csv`](industrial8_t3_opt45.csv) |
@@ -22,37 +22,45 @@ $$
 | 5 | 28,192 | 144 | [`industrial8_t5_opt144.csv`](industrial8_t5_opt144.csv) |
 | 6 | 61,272 | 144 | [`industrial8_t6_opt144.csv`](industrial8_t6_opt144.csv) |
 
-For strength 3, the frozen 2023 CT-Competition result table records a best **valid** entry of 54 tests; a 49-row entry in the same table is marked invalid. R003 therefore reduces that frozen valid comparison from 54 to 45 tests, a reduction of 9 tests (16.7%), and proves that 45 is optimal for this model.
+For strength 3, the pinned 2023 CT-Competition table records 54 as the smallest **valid** result for this model; a 49-row entry is marked invalid. R003 therefore improves that frozen valid comparison from 54 to 45 tests, a reduction of 9 tests (16.7%), and proves 45 optimal for the frozen benchmark.
 
-## Why the optimum is exact
+## Why the lower bounds are exact
 
-The constraints partition 144 of the 159 valid configurations into nine disjoint **mandatory classes**, each containing all 16 assignments of the four free Boolean parameters `p1,...,p4`.
+The constraints partition 144 of the 159 valid configurations into nine disjoint **mandatory classes**. In each mandatory class the four Boolean parameters `p1,...,p4` are completely free.
 
-Within each mandatory class, covering selected interactions forces exact local binary covering minima:
+Any interaction containing the false parameter that defines one mandatory class can only be covered by a row from that class. Thus class-local covering lower bounds add across the nine classes.
 
-| Global strength | Required local coverage on `p1,...,p4` | Exact local minimum |
-|---:|---|---:|
-| 2 | all 1-way interactions | 2 |
-| 3 | all 2-way interactions | 5 |
-| 4 | all 3-way interactions | 8 |
-| 5 | all 4-way interactions | 16 |
-| 6 | all 4-way interactions plus a forced-true parameter | 16 |
+| Global strength | Local obligation on `p1,...,p4` | Class-local minimum | Global lower bound |
+|---:|---|---:|---:|
+| 2 | all 1-way assignments | 2 | 18 |
+| 3 | all 2-way assignments | 5 | 45 |
+| 4 | all 3-way assignments | 8 | 72 |
+| 5 | all 4-way assignments | 16 | 144 |
+| 6 | all 4-way assignments plus one forced-true parameter | 16 | 144 |
 
-Because an interaction containing a class-defining false parameter can only be covered by a row from that class, the nine classwise bounds add. This yields lower bounds $18,45,72,144,144$. The published witnesses meet those bounds exactly and are therefore optimal.
+The only nontrivial local combinatorial obstruction is the pairwise minimum 5 on four binary columns. The proof note and manuscript give the short analytic argument; both exact replay implementations independently brute-force the local finite problem. Lean additionally kernel-checks the four-row obstruction, the explicit five-row witness, and the arithmetic aggregation of a class-local bound across nine classes.
 
-See the [paper manuscript](manuscript/r003_industrial8_exact_optima.pdf) and the GitHub-rendered [proof note](proof.md).
+## Read the proof
 
-## Verification
+- [GitHub-rendered proof note](proof.md)
+- [LaTeX manuscript source](manuscript/r003_industrial8_exact_optima.tex) - CI compiles this source from a clean checkout
+- [Manuscript build instructions](manuscript/README.md)
+- [Exact claim and non-claims](CLAIM.md)
+- [Statement-to-evidence crosswalk](STATEMENT_AUDIT.md)
+- [Verification and trust boundary](VERIFICATION.md)
+- [Source and comparison audit](SOURCE_AUDIT.md)
 
-Three complementary checks are public:
+## Verification architecture
 
-1. **Source/provenance check** — [`verify_sources.py`](verify_sources.py) verifies that the frozen benchmark bytes exactly match the pinned upstream Git blob and that the frozen 2023 competition excerpt has best valid strength-3 size 54.
-2. **Primary exact verifier** — [`verify.py`](verify.py) independently enumerates all 24,576 raw assignments, obtains the 159 valid configurations, enumerates every feasible interaction at strengths 2–6, reads the **published CSV witnesses**, checks complete coverage, and exhaustively solves the 16-row class-local lower-bound subproblems.
-3. **Independent C++20 verifier** — [`verify_independent.cpp`](verify_independent.cpp) separately parses and evaluates the benchmark constraint text, re-enumerates the model and all interactions, reads the published witnesses, and independently brute-forces the local binary minima.
+R003 deliberately uses complementary assurance methods rather than treating any one script or formalization as the whole proof.
 
-No optimizer, language model, floating-point solver, network service, or search trace is required to replay the final correctness claim.
+1. **Source identity** - `verify_sources.py` checks the frozen benchmark and 2023 comparison excerpt against pinned hashes.
+2. **Primary exact replay** - `verify.py` enumerates all 24,576 raw assignments, derives exactly 159 valid configurations, enumerates all feasible interactions, reads the published witnesses, checks coverage, and exhaustively solves the local binary covering subproblems.
+3. **Independent exact replay** - `verify_independent.cpp` separately parses and evaluates the benchmark text, re-enumerates the model/interactions, reads the witness files, and independently brute-forces the local minima.
+4. **Auxiliary Lean formalization** - `R003/LocalCovering.lean` kernel-checks the nontrivial four-row pairwise obstruction, the explicit five-row witness, and the nine-class arithmetic aggregation theorem. It is intentionally **not** presented as a full Lean formalization of the benchmark parser, mandatory-class decomposition, or complete witness-coverage theorem.
+5. **CI trust checks** - Lean and Mathlib are pinned; production Lean sources are scanned for proof shortcuts; an axiom audit runs at `--trust=0`; and `leanchecker --fresh` replays the compiled formalization.
 
-### Reproduce from a clean checkout
+### Clean-checkout replay
 
 ```bash
 python3 verify_sources.py
@@ -60,63 +68,42 @@ python3 verify.py
 
 g++ -std=c++20 -O2 -Wall -Wextra -pedantic verify_independent.cpp -o verify_independent
 ./verify_independent
+
+lake build R003 R003.Audit
+lake env lean --trust=0 R003/Audit.lean
+lake env leanchecker --fresh R003.LocalCovering
 ```
 
-The committed [`verification-report.json`](verification-report.json) is deterministic. To regenerate it:
-
-```bash
-python3 verify.py --write-report
-git diff --exit-code verification-report.json
-```
-
-Full verification details and trust boundaries are in [`VERIFICATION.md`](VERIFICATION.md).
-
-## Exact claim boundary
-
-This release proves exact optima **for the frozen `INDUSTRIAL_8` model and the feasible-interaction semantics used here**. It does not claim a general formula for arbitrary constrained test-generation instances, nor does it claim that the 2023 competition table exhausts all later, unpublished, or independently developed constructions.
-
-See [`CLAIM.md`](CLAIM.md), [`claim.json`](claim.json), and [`STATEMENT_AUDIT.md`](STATEMENT_AUDIT.md).
+The Python/C++ replay proves the complete frozen-model claim. The Lean layer narrows the trusted mathematical core but does not replace those full-model checks. See `VERIFICATION.md` and `formalization.yaml` for the precise boundary.
 
 ## Provenance
 
-The local `INDUSTRIAL_8.txt` is byte-for-byte identical to the upstream benchmark at:
+The benchmark is pinned to `fmselab/CIT_Benchmark_Generator`:
 
-- repository: `fmselab/CIT_Benchmark_Generator`
-- commit: `7ed44c18a771b9bbdc444a3c9178a7a68510a53f`
-- Git blob: `4ede6ee93f6eea06927f972cf5ba22621ecc3013`
-- SHA-256: `01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4`
+- commit `7ed44c18a771b9bbdc444a3c9178a7a68510a53f`
+- Git blob `4ede6ee93f6eea06927f972cf5ba22621ecc3013`
+- SHA-256 `01785c43dbce4381d928c064c14dfe3c3734237db8fa7c2e84d8647f8ed299b4`
 
-The 2023 comparison is pinned to:
+The frozen 2023 comparison is pinned to `fmselab/ct-competition` commit `3c8cdc1ac9eb4e045404d8db75ce38bad7541808`, file blob `414bc2b1d47a8cd5a8e7263b5fa01e1104929da3`.
 
-- repository: `fmselab/ct-competition`
-- branch snapshot commit: `3c8cdc1ac9eb4e045404d8db75ce38bad7541808`
-- file Git blob: `414bc2b1d47a8cd5a8e7263b5fa01e1104929da3`
+## Claim boundary
 
-See [`SOURCE_AUDIT.md`](SOURCE_AUDIT.md).
+R003 proves exact optima **only for the frozen `INDUSTRIAL_8` model and the feasible-interaction semantics documented here**. It does not claim a general theorem for arbitrary constrained test suites, and the 54-to-45 comparison is deliberately limited to the pinned 2023 public result table rather than asserting priority over every later or unpublished construction.
+
+The repository does not claim that the complete theorem is Lean-formalized. External specialist review and peer review are not claimed.
 
 ## Repository map
 
-- `manuscript/` — typeset paper source and PDF
-- `INDUSTRIAL_8.txt` — frozen benchmark, byte-identical to the pinned upstream blob
-- `industrial8_t*_opt*.csv` — explicit optimal witnesses at strengths 2–6
-- `proof.md` — rendered proof note
-- `CLAIM.md` / `claim.json` — exact claim and non-claims
-- `STATEMENT_AUDIT.md` — public claim → paper → verification crosswalk
-- `SOURCE_AUDIT.md` — benchmark and comparison provenance
-- `VERIFICATION.md` — reproduction and trust boundary
-- `verify.py` — primary exact verifier
-- `verify_independent.cpp` — independent parser/verifier
-- `verify_sources.py` — source-integrity replay
-- `verification-report.json` — deterministic machine-readable result
+- `INDUSTRIAL_8.txt` - frozen benchmark.
+- `industrial8_t*_opt*.csv` - explicit optimal witnesses.
+- `manuscript/` - paper source and deterministic build instructions.
+- `proof.md` - GitHub-rendered proof.
+- `R003/` / `R003.lean` - auxiliary Lean lower-bound formalization and axiom audit.
+- `formalization.yaml` - machine-readable formalization scope and declarations.
+- `CLAIM.md`, `claim.json`, `STATEMENT_AUDIT.md` - statement identity.
+- `VERIFICATION.md` - reproduction and trust boundary.
+- `SOURCE_AUDIT.md` - benchmark/comparison provenance.
+- `verify.py`, `verify_independent.cpp`, `verify_sources.py` - exact replay paths.
+- `verification-report.json` - deterministic machine-readable results.
 
-## Status
-
-- Public construction and proof: **available**
-- Exact primary verification: **available**
-- Independent implementation replay: **available**
-- External specialist review: **pending**
-- Peer review: **not claimed**
-
-## Public release page
-
-https://unsolved-labs.github.io/results/r003-industrial8/
+Public release page: https://unsolved-labs.github.io/results/r003-industrial8/
