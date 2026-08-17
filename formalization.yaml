@@ -10,7 +10,7 @@ sources:
   - title: "Exact Constrained Covering Arrays for the INDUSTRIAL_8 Benchmark"
     authors:
       - "Unsolved Labs"
-    id: "manuscript/r003_industrial8_exact_optima.pdf"
+    id: "manuscript/r003_industrial8_exact_optima.tex"
     type: "paper"
     license: "all-rights-reserved"
     author_contacted: "n/a"
@@ -28,21 +28,32 @@ status:
   sorry_in_definitions: 0
   notes: >-
     This is a partial formalization of a load-bearing lower-bound subproblem,
-    not a Lean formalization of the complete R003 theorem.
-  axioms: []
+    not a Lean formalization of the complete R003 theorem. Axiom declarations
+    below are the actual dependencies reported by `#print axioms`; CI rejects
+    `sorryAx`, `Lean.trustCompiler`, and any dependency outside this standard
+    allowlist.
+  axioms:
+    - "propext"
+    - "Classical.choice"
+    - "Quot.sound"
   main_results:
     - declaration: "R003.pairwiseFourRowObstruction"
       file: "R003/LocalCovering.lean"
       sorry_count: 0
-      axioms: []
+      axioms:
+        - "propext"
     - declaration: "R003.pairwiseFiveRowWitness"
       file: "R003/LocalCovering.lean"
       sorry_count: 0
-      axioms: []
+      axioms:
+        - "propext"
     - declaration: "R003.nineClassSumLower"
       file: "R003/LocalCovering.lean"
       sorry_count: 0
-      axioms: []
+      axioms:
+        - "propext"
+        - "Classical.choice"
+        - "Quot.sound"
 
 automation:
   methods:
