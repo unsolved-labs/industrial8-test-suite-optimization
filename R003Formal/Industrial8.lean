@@ -27,7 +27,16 @@ def baseFive : Fin 5 → Row :=
     ![1, 1, 1, 0]
   ]
 
-/-- Four rows cannot pairwise cover four binary columns. -/
+/--
+Four rows cannot pairwise cover four binary columns.
+
+The proposition is finite but the generated decision tree is deeper than
+Lean's conservative default recursion limit, so this theorem raises only the
+elaborator/kernel reduction resource bounds. The proof still uses `decide`,
+not `native_decide` or an external oracle.
+-/
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 0 in
 theorem noFourRowPairwiseCover :
     ∀ suite : Fin 4 → Row, ¬ PairwiseCovers suite := by
   decide
