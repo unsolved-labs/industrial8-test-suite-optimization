@@ -26,18 +26,24 @@ status:
     and C++ exact finite verifiers and are not claimed as fully Lean-formalized.
   sorry_count: 0
   sorry_in_definitions: 0
-  axioms: []
+  axioms:
+    - "propext"
+    - "Quot.sound"
   main_results:
     - name: "Four rows cannot pairwise cover four binary columns"
       declaration: "R003.noFourRowPairwiseCover"
       file: "R003Formal/Industrial8.lean"
       sorry_count: 0
-      axioms: []
+      axioms:
+        - "propext"
+        - "Quot.sound"
     - name: "The explicit five-row block pairwise covers four binary columns"
       declaration: "R003.baseFivePairwiseCovers"
       file: "R003Formal/Industrial8.lean"
       sorry_count: 0
-      axioms: []
+      axioms:
+        - "propext"
+        - "Quot.sound"
 
 automation:
   methods:
@@ -48,7 +54,8 @@ automation:
   notes: >-
     Search and generation are outside the final correctness oracle; public
     correctness is supported by the manuscript, exact replay artifacts, and
-    the checked Lean declarations listed above.
+    the checked Lean declarations listed above. The Lean proofs use ordinary
+    finite `decide`; they do not use `native_decide`, `sorry`, or `admit`.
 
 review:
   status: "pending-independent-specialist-review"
