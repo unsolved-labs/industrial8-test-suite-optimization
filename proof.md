@@ -1,6 +1,6 @@
 # R003 - Exact constrained covering arrays for `INDUSTRIAL_8`
 
-A typeset version is available in [`manuscript/r003_industrial8_exact_optima.pdf`](manuscript/r003_industrial8_exact_optima.pdf). Machine-checking details are in [`VERIFICATION.md`](VERIFICATION.md).
+The paper source is [`manuscript/r003_industrial8_exact_optima.tex`](manuscript/r003_industrial8_exact_optima.tex), which CI compiles from a clean checkout. Machine-checking details are in [`VERIFICATION.md`](VERIFICATION.md).
 
 ## Statement
 
