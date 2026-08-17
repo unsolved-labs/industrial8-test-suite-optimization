@@ -56,12 +56,16 @@ for marker in ('sorryAx', 'Lean.trustCompiler'):
     if marker in text:
         raise SystemExit(f'Forbidden Lean trust marker: {marker}')
 allowed = {'propext', 'Classical.choice', 'Quot.sound'}
-for group in re.findall(r'depends on axioms:\s*\[([^\]]*)\]', text, flags=re.S):
+groups = re.findall(r'depends on axioms:\s*\[([^\]]*)\]', text, flags=re.S)
+no_axiom = len(re.findall(r'does not depend on any axioms', text))
+if len(groups) + no_axiom != 7:
+    raise SystemExit(f'Expected 7 audited Lean endpoints, found {len(groups) + no_axiom}.')
+for group in groups:
     names = {n.strip() for n in group.replace('\n', ' ').split(',') if n.strip()}
     unexpected = names - allowed
     if unexpected:
         raise SystemExit(f'Unexpected axioms: {sorted(unexpected)}')
-print('Lean axiom audit contains no forbidden or unexpected trust assumptions.')
+print('All seven audited endpoints use only the permitted Lean axioms.')
 PYAX
 
 printf '\n== R003 fresh Lean kernel replay ==\n'
