@@ -28,6 +28,7 @@ status:
   sorry_in_definitions: 0
   axioms:
     - "propext"
+    - "Classical.choice"
     - "Quot.sound"
   main_results:
     - name: "Four rows cannot pairwise cover four binary columns"
@@ -36,6 +37,7 @@ status:
       sorry_count: 0
       axioms:
         - "propext"
+        - "Classical.choice"
         - "Quot.sound"
     - name: "The explicit five-row block pairwise covers four binary columns"
       declaration: "R003.baseFivePairwiseCovers"
@@ -54,8 +56,10 @@ automation:
   notes: >-
     Search and generation are outside the final correctness oracle; public
     correctness is supported by the manuscript, exact replay artifacts, and
-    the checked Lean declarations listed above. The Lean proofs use ordinary
-    finite `decide`; they do not use `native_decide`, `sorry`, or `admit`.
+    the checked Lean declarations listed above. The formal proof of the
+    four-row impossibility follows the manuscript's structural argument; the
+    explicit five-row witness is checked by ordinary finite `decide`. Neither
+    theorem uses `native_decide`, `sorry`, or `admit`.
 
 review:
   status: "pending-independent-specialist-review"
