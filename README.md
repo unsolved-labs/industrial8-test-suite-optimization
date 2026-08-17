@@ -42,9 +42,9 @@ The only nontrivial local combinatorial obstruction is the pairwise minimum 5 on
 
 ## Read the proof
 
-- [Typeset manuscript](manuscript/r003_industrial8_exact_optima.pdf)
-- [LaTeX source](manuscript/r003_industrial8_exact_optima.tex)
 - [GitHub-rendered proof note](proof.md)
+- [LaTeX manuscript source](manuscript/r003_industrial8_exact_optima.tex) - CI compiles this source from a clean checkout
+- [Manuscript build instructions](manuscript/README.md)
 - [Exact claim and non-claims](CLAIM.md)
 - [Statement-to-evidence crosswalk](STATEMENT_AUDIT.md)
 - [Verification and trust boundary](VERIFICATION.md)
@@ -96,7 +96,7 @@ The repository does not claim that the complete theorem is Lean-formalized. Exte
 
 - `INDUSTRIAL_8.txt` - frozen benchmark.
 - `industrial8_t*_opt*.csv` - explicit optimal witnesses.
-- `manuscript/` - paper source and PDF.
+- `manuscript/` - paper source and deterministic build instructions.
 - `proof.md` - GitHub-rendered proof.
 - `R003/` / `R003.lean` - auxiliary Lean lower-bound formalization and axiom audit.
 - `formalization.yaml` - machine-readable formalization scope and declarations.
