@@ -6,69 +6,77 @@ namespace R003
 abbrev Word := Fin 4 → Bool
 
 /-- Every one-coordinate binary interaction is represented. -/
-def covers1 (s : Finset Word) : Bool :=
-  (Finset.univ : Finset Word).all fun target =>
-    (Finset.univ : Finset (Fin 4)).all fun i =>
-      s.any fun w => w i == target i
+def Covers1 (s : Finset Word) : Prop :=
+  ∀ target : Word, ∀ i : Fin 4, ∃ w ∈ s, w i = target i
 
 /-- Every two-coordinate binary interaction on distinct coordinates is represented. -/
-def covers2 (s : Finset Word) : Bool :=
-  (Finset.univ : Finset Word).all fun target =>
-    (Finset.univ : Finset (Fin 4)).all fun i =>
-      (Finset.univ : Finset (Fin 4)).all fun j =>
-        if i = j then true
-        else s.any fun w => (w i == target i) && (w j == target j)
+def Covers2 (s : Finset Word) : Prop :=
+  ∀ target : Word, ∀ i j : Fin 4, i ≠ j →
+    ∃ w ∈ s, w i = target i ∧ w j = target j
 
 /-- Every three-coordinate binary interaction on distinct coordinates is represented. -/
-def covers3 (s : Finset Word) : Bool :=
-  (Finset.univ : Finset Word).all fun target =>
-    (Finset.univ : Finset (Fin 4)).all fun i =>
-      (Finset.univ : Finset (Fin 4)).all fun j =>
-        (Finset.univ : Finset (Fin 4)).all fun k =>
-          if i = j ∨ i = k ∨ j = k then true
-          else
-            s.any fun w =>
-              (w i == target i) && (w j == target j) && (w k == target k)
+def Covers3 (s : Finset Word) : Prop :=
+  ∀ target : Word, ∀ i j k : Fin 4,
+    i ≠ j → i ≠ k → j ≠ k →
+      ∃ w ∈ s, w i = target i ∧ w j = target j ∧ w k = target k
 
 /-- Every assignment on all four free Boolean coordinates is represented. -/
-def covers4 (s : Finset Word) : Bool :=
-  (Finset.univ : Finset Word).all fun target => decide (target ∈ s)
+def Covers4 (s : Finset Word) : Prop :=
+  ∀ target : Word, target ∈ s
+
+instance covers1Decidable (s : Finset Word) : Decidable (Covers1 s) := by
+  unfold Covers1
+  infer_instance
+
+instance covers2Decidable (s : Finset Word) : Decidable (Covers2 s) := by
+  unfold Covers2
+  infer_instance
+
+instance covers3Decidable (s : Finset Word) : Decidable (Covers3 s) := by
+  unfold Covers3
+  infer_instance
+
+instance covers4Decidable (s : Finset Word) : Decidable (Covers4 s) := by
+  unfold Covers4
+  infer_instance
 
 /-- There is no covering set of cardinality strictly below `n`. -/
-def noSmallerCover (covers : Finset Word → Bool) (n : Nat) : Bool :=
-  (Finset.range n).all fun k =>
-    ((Finset.univ : Finset Word).powersetCard k).all fun s => ! covers s
+def NoSmallerCover (covers : Finset Word → Prop)
+    [∀ s, Decidable (covers s)] (n : Nat) : Prop :=
+  ∀ s : Finset Word, covers s → n ≤ s.card
 
 /-- At least one covering set of cardinality exactly `n` exists. -/
-def coverOfSizeExists (covers : Finset Word → Bool) (n : Nat) : Bool :=
-  ((Finset.univ : Finset Word).powersetCard n).any covers
+def CoverOfSizeExists (covers : Finset Word → Prop)
+    [∀ s, Decidable (covers s)] (n : Nat) : Prop :=
+  ∃ s : Finset Word, s.card = n ∧ covers s
 
 /-- Finite certificate that `n` is the exact covering minimum. -/
-def exactMinimum (covers : Finset Word → Bool) (n : Nat) : Bool :=
-  noSmallerCover covers n && coverOfSizeExists covers n
+def ExactMinimum (covers : Finset Word → Prop)
+    [∀ s, Decidable (covers s)] (n : Nat) : Prop :=
+  NoSmallerCover covers n ∧ CoverOfSizeExists covers n
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-2 lower bound. -/
-theorem localOneWayMinimum : exactMinimum covers1 2 = true := by
+theorem localOneWayMinimum : ExactMinimum Covers1 2 := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-3 lower bound. -/
-theorem localPairwiseMinimum : exactMinimum covers2 5 = true := by
+theorem localPairwiseMinimum : ExactMinimum Covers2 5 := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-4 lower bound. -/
-theorem localThreeWayMinimum : exactMinimum covers3 8 = true := by
+theorem localThreeWayMinimum : ExactMinimum Covers3 8 := by
   decide
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 0 in
 /-- Exact local minimum used by the global strength-5/6 lower bounds. -/
-theorem localFourWayMinimum : exactMinimum covers4 16 = true := by
+theorem localFourWayMinimum : ExactMinimum Covers4 16 := by
   decide
 
 /-- If nine disjoint classes each contribute at least `m` rows, their total contributes at least `9*m`. -/
